@@ -23,6 +23,6 @@ One class per header/source pair
 BasedOnStyle: Google
 IndentWidth: 4
 UseTab: Never
-PointerAlignment: Left      # int* ptr — attached to the type, not the name
-AccessModifierOffset: -4    # keeps private:/public: at column 0 with a 4-space IndentWidth
+PointerAlignment: Left      # int* ptr
+AccessModifierOffset: -4
 ```
