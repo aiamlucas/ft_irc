@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IRC — Internet Relay Chat — Layer Interfaces</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#13161b;
+    --border:rgba(255,255,255,0.09);
+    --text:#e8eaed;
+    --text-dim:#9aa3ad;
+    --teal:#4fd1c5;
+    --amber:#f2a65a;
+    --purple:#b794f4;
+    --gray:#7b8794;
+    --sans:'Inter', sans-serif;
+    --mono:'Roboto Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--bg); color:var(--text); font-family:var(--sans);
+    font-size:16px; line-height:1.65; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:920px; margin:0 auto; padding:0 24px;}
+
+  header{border-bottom:1px solid var(--border); padding:48px 0 28px;}
+  header .eyebrow{font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--text-dim); margin-bottom:10px;}
+  header h1{font-weight:700; font-size:clamp(26px,4vw,38px); letter-spacing:-0.01em;}
+  header p{color:var(--text-dim); max-width:640px; margin-top:12px; font-size:15.5px;}
+  nav{display:flex; gap:22px; margin-top:24px; font-size:14px;}
+  nav a{color:var(--text-dim); text-decoration:none; padding-bottom:4px; border-bottom:2px solid transparent;}
+  nav a:hover{color:var(--text);}
+  nav a.e{border-color:var(--teal);} nav a.p{border-color:var(--amber);} nav a.d{border-color:var(--purple);}
+
+  section{padding:48px 0; border-bottom:1px solid var(--border); scroll-margin-top:20px;}
+  section:last-of-type{border-bottom:none;}
+  section h2{font-size:22px; font-weight:700; margin-bottom:4px;}
+  section .tag{font-family:var(--mono); font-size:18px; letter-spacing:.1em; text-transform:uppercase; margin-bottom:16px; display:block;}
+  .tag.e{color:var(--teal);} .tag.p{color:var(--amber);} .tag.d{color:var(--purple);}
+  section > p.lead{color:var(--text-dim); max-width:680px; margin-bottom:28px; font-size:15px;}
+
+  h3{font-size:14px; font-weight:500; text-transform:uppercase; letter-spacing:.05em; color:var(--text-dim); margin:30px 0 12px;}
+  p{max-width:680px; margin-bottom:12px; font-size:15px;}
+  code{font-family:var(--mono); font-size:.9em; background:var(--panel); padding:2px 6px; border-radius:4px; color:var(--teal);}
+
+  .diagram{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px; margin:18px 0 28px;}
+  .diagram svg{display:block; width:100%; height:auto;}
+
+  table{width:100%; border-collapse:collapse; margin:18px 0 28px; font-size:13.5px;}
+  th,td{text-align:left; padding:10px 14px; border:1px solid var(--border); vertical-align:top;}
+  thead th{background:var(--panel); font-family:var(--mono); font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--text-dim); font-weight:500;}
+  tbody td{color:var(--text-dim);}
+  tbody tr:nth-child(odd) td, tbody tr:nth-child(odd) th{background:rgba(255,255,255,0.02);}
+  td.ok{color:var(--text);}
+
+  pre{font-family:var(--mono); font-size:13px; line-height:1.6; background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px 18px; overflow-x:auto; margin:14px 0 24px; color:var(--text);}
+  pre .cm{color:var(--text-dim); font-style:italic;}
+
+  .note{border-left:3px solid var(--text-dim); background:var(--panel); border-radius:0 8px 8px 0; padding:12px 16px; margin:16px 0; font-size:14px; color:var(--text-dim); max-width:680px;}
+  .note.e{border-left-color:var(--teal);} .note.p{border-left-color:var(--amber);} .note.d{border-left-color:var(--purple);}
+
+  .ircwindow{border:1px solid var(--border); border-radius:10px; overflow:hidden; background:var(--panel); max-width:640px; margin:18px 0 28px;}
+  .ircwindow-header{background:#1a1d22; padding:10px 16px; border-bottom:1px solid var(--border);}
+  .ircwindow-header .chan{font-weight:700; color:var(--text); font-size:14px;}
+  .ircwindow-header .topic{color:var(--text-dim); font-size:11.5px; margin-top:3px;}
+  .ircwindow-body{display:flex;}
+  .ircwindow-messages{flex:1; padding:12px 16px; font-family:var(--mono); font-size:12.5px;}
+  .ircwindow-messages .line{margin-bottom:7px;}
+  .ircwindow-messages .ts{color:var(--text-dim); margin-right:6px;}
+  .ircwindow-messages .nick{font-weight:700;}
+  .ircwindow-messages .sys{color:var(--text-dim); font-style:italic;}
+  .ircwindow-users{width:130px; border-left:1px solid var(--border); padding:12px; font-size:12px; color:var(--text-dim); flex-shrink:0;}
+  .ircwindow-users .label{font-size:10px; letter-spacing:.08em; text-transform:uppercase; margin-bottom:8px; color:var(--text-dim);}
+  .ircwindow-users .u{margin-bottom:7px;}
+  .ircwindow-users .op{color:var(--amber);}
+  @media (max-width:480px){ .ircwindow-users{display:none;} }
+
+  footer{padding:30px 0; text-align:center; color:var(--text-dim); font-size:12.5px; font-family:var(--mono);}
+
+  @media (max-width:640px){ nav{flex-wrap:wrap; gap:14px;} }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">/join #ft_irc</div>
+  <h1>IRC (Internet Relay Chat)</h1>
+  <p>Layer Interfaces: Engine, Protocol, Domain.</p>
+  <nav>
+    <a href="#fundamentals">Fundamentals</a>
+    <a class="e" href="#engine">Engine</a>
+    <a class="p" href="#protocol">Protocol</a>
+    <a class="d" href="#domain">Domain</a>
+    <a href="#appendix">Appendix</a>
+    <a href="#appendix2">Integration</a>
+  </nav>
+</header>
+
+<section id="fundamentals">
+  <h2>First, the basics underneath all of this</h2>
+  <p class="lead">Two words everything else depends on: file descriptor, and socket.</p>
+
+  <h3>File descriptor</h3>
+  <p>When your program opens anything (a file, a socket, a pipe) the OS doesn't hand you the resource itself. It hands you an integer: the <strong>file descriptor</strong>.</p>
+  <p>Say opening a file returns <code>8</code> (a file descriptor). From that point on, every syscall that touches it refers to it by that one number alone, never by name: <code>write(8, ...)</code> sends bytes to it, <code>close(8)</code> closes it. The filename is never mentioned again, only <code>8</code>.</p>
+  <p>Your terminal already gave you three for free: <code>0</code> stdin, <code>1</code> stdout, <code>2</code> stderr. Anything you open yourself gets the next free number.</p>
+  <p>A connected client is a file descriptor. Same integer, same <code>read</code>/<code>write</code>/<code>close</code> family of operations (sockets use <code>recv</code>/<code>send</code>). That's why one <code>poll()</code> array can watch a listening socket and a dozen clients side by side with the exact same mechanism.</p>
+  <p><code>poll()</code> (and its more scalable relatives <code>epoll</code> on Linux, <code>kqueue</code> on BSD) is the function that lets one thread watch many file descriptors at once, asking the kernel "which of these are actually ready right now?" instead of blocking on one at a time. That single call is what the entire non-blocking engine below is built around.</p>
+
+  <h3>Socket</h3>
+  <p>A <strong>socket</strong> is one specific kind of thing a file descriptor can point to: a network connection endpoint. <code>socket()</code> is to a connection what <code>open()</code> is to a file. Your server holds two different kinds:</p>
+  <ul style="color:var(--text-dim); max-width:680px; margin:0 0 20px 20px;">
+    <li style="margin-bottom:8px;"><strong style="color:var(--text)">The listening socket</strong> exactly one, created once, never carries IRC traffic, exists only to produce new fds via <code>accept()</code></li>
+    <li><strong style="color:var(--text)">Client sockets</strong> one per connected person, created fresh each time <code>accept()</code> returns, and these are what actually carry message bytes</li>
+  </ul>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 260" role="img" aria-label="One listening socket stays unchanged while accept is called twice, producing two separate client sockets: fd 4 for Pedro and fd 5 for Ana.">
+      <defs><marker id="arrowFd" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="40" y="90" width="220" height="60" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="150" y="112" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="13">Listening socket</text>
+      <text x="150" y="130" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">fd 3 · port 6667 · never changes</text>
+
+      <path d="M260 110 C 290 110, 290 50, 320 50" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#arrowFd)"/>
+      <text x="290" y="75" text-anchor="middle" fill="var(--text-dim)" font-size="10">accept() #1</text>
+      <rect x="320" y="20" width="200" height="60" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1"/>
+      <text x="420" y="42" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Pedro's socket</text>
+      <text x="420" y="60" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">fd 4</text>
+
+      <path d="M260 130 C 290 130, 290 180, 320 180" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#arrowFd)"/>
+      <text x="290" y="160" text-anchor="middle" fill="var(--text-dim)" font-size="10">accept() #2</text>
+      <rect x="320" y="150" width="200" height="60" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1"/>
+      <text x="420" y="172" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Ana's socket</text>
+      <text x="420" y="190" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">fd 5</text>
+
+      <text x="350" y="235" text-anchor="middle" fill="var(--text-dim)" font-size="11">one accept() per connecting client — the listening socket itself never changes</text>
+    </svg>
+  </div>
+
+  <h3>What IRC actually is</h3>
+  <p>IRC is the most iconic chat program ever written. It ran most of real-time internet communication through the 90s and into the early 2000s, before people migrated toward more centralized platforms: ICQ, MSN, later WhatsApp.</p>
+
+  <p>One of the main things those later programs quietly dropped was the public room. On IRC, if you liked a band, you joined <code>#radiohead</code>. Into skateboarding? You joined <code>#skateboard</code>, made friends, then discovered that <code>#sk8</code> was about the exact same thing, just way cooler and with way more people on it. That community-building mostly disappeared for two decades, until Discord brought a version of the same shape back, but this time build as an Electron app, without IRC's terminal elegance.</p>
+
+  <p>IRC is genuinely decentralized: no company owns the network, no app store gatekeeps the client, no central database holds everyone's messages. Anyone can stand up their own server. A real IRC network is literally many independently-run servers linked together (server-to-server is half of the protocol). A handful of plain-text commands over one TCP connection is the entire thing.</p>
+
+  <p>Communication has since gotten more and more centralized. A handful of companies running the whole stack end to end. Because of that, and because of what that kind of control increasingly means for surveillance, newer projects have been born, circling back to IRC's original idea of decentralization. Matrix is the clearest modern attempt: open, but a far more complex protocol, built for today's surveillance reality, with encryption baked in from the start, the Olm and Megolm cryptographic ratchets, roughly Signal-grade, applied to every room. A nice and a necessary piece of software to have.</p>
+
+  <p>IRC, because of its simplicity, is still alive and will always have a place of its own. Pushing 40 years old, it's still the simple, reliable one: <strong>Libera.Chat</strong>, the network most open-source projects moved to in 2021, alone hosts over 20,000 channels today.</p>
+
+  <p>The protocol itself hasn't stood entirely still, either. <strong>IRCv3</strong> has layered on things like SASL authentication and capability negotiation, and most networks now support TLS to encrypt the connection. The same idea as HTTPS securing a website, applied to IRC's own wire. IRC isn't trying to do what the newer protocols do; it's doing what it already does best, it's simple and now has just with a layer of security on top.</p>
+
+  <p>Writing the client↔server protocol is a good way to learn sockets, non-blocking I/O, and the shape of real-time systems in general. These are the same skills behind a multiplayer game server, a trading system's order feed, or a live chat backend. The mechanism itself is simple: a <strong>client</strong> opens a TCP connection to a <strong>server</strong>, picks a nickname, joins one or more <strong>channels</strong> (chat rooms) and sends lines of text, either broadcast to everyone in a channel or sent privately to one person.<p/>
+
+  <div class="ircwindow">
+    <div class="ircwindow-header">
+      <div class="chan">#sk8</div>
+      <div class="topic">Topic: tricks, lifystile, etc! Read the topic, be nice · 4 users</div>
+    </div>
+    <div class="ircwindow-body">
+      <div class="ircwindow-messages">
+        <pre style="color:var(--text-dim); font-size:11px; line-height:1.3; margin:0 0 12px;">╒═════════╗ ╒════╗  ╒═══╗ ╒═════════╗
+│  ╓────┐ ║ └┐  ╓╜ ╒╛ ╓─╜ │  ╓───┐  ║
+│  ║    └─╜  │  ║ ╒╛ ╓╜   │  ║   │  ║
+│  ╚══════╗  │  ╚═╛  ╚═╗  │  ╚═══╛  ║
+└──────┐  ║  │  ╓───┐  ║  │  ╓───┐  ║
+╒═╗    │  ║  │  ║   │  ║  │  ║   │  ║
+│ ╚════╛  ║ ╒╛  ╚╗ ╒╛  ╚╗ │  ╚═══╛  ║
+└─────────╜ └────╜ └────╜ └─────────╜</pre>
+		<div class="line sys">* pedro has joined #sk8</div>
+		<div class="line"><span class="ts">14:02</span>&lt;<span class="nick" style="color:var(--teal)">ssin</span>&gt; E aee pedro :))</div>
+		<div class="line"><span class="ts">14:03</span>&lt;<span class="nick" style="color:var(--purple)">pedro</span>&gt; Hey! First time here!</div>
+		<div class="line"><span class="ts">14:03</span>&lt;<span class="nick" style="color:var(--amber)">schappuy</span>&gt; bienvenue poulette!</div>
+		<div class="line"><span class="ts">14:04</span>&lt;<span class="nick" style="color:var(--purple)">jkubaev</span>&gt; Ohh no I didn't pass the exam again... so it's life (or game of life written in C) </div>
+      </div>
+      <div class="ircwindow-users">
+        <div class="label">Users — 4</div>
+        <div class="u op">@ssin</div>
+        <div class="u op">@schappuy</div>
+        <div class="u">jkubaev</div>
+        <div class="u">pedro</div>
+      </div>
+    </div>
+  </div>
+
+  <p>The server's whole job is relaying those lines correctly and enforcing a handful of rules about who's allowed to do what. No images, no video through the protocol itself: just text, one line at a time.</p>
+
+  <h3>Three simple layers</h3>
+
+  <p>Three layers, stacked. One that only deals in bytes and fds → <strong style="color:var(--teal)">Engine</strong> (sockets, <code>poll()</code>, <code>recv()</code>). One in the middle that only deals in text and routing → <strong style="color:var(--amber)">Protocol</strong> (parsing, dispatch). One that only deals in the actual rules → <strong style="color:var(--purple)">Domain</strong> (channels, modes, who's an operator).</p>
+
+  <p>The clearest way to see it for real is to follow one single action all the way through:</p>
+
+  <h3>Pedro's JOIN, with the actual bytes</h3>
+  <p>Before any of your code runs, WeeChat (or other IRC client) writes exactly these 11 bytes onto Pedro's socket:</p>
+  <pre> J   O   I   N   _   #   s   k   8  \r  \n
+4A  4F  49  4E  20  23  73  6B  38  0D  0A</pre>
+  <p>That's all: 11 numbers in a kernel buffer. No "JOIN command" exists anywhere yet.</p>
+  <ol style="color:var(--text-dim); max-width:680px; margin:0 0 20px 20px;">
+    <li style="margin-bottom:10px;"><strong style="color:var(--text)">Engine</strong><code>recv()</code> copies those 11 bytes in. Scans for <code>\r\n</code>, finds it at byte 10. Slices off <code>"JOIN #sk8"</code> and hands that <em>string</em> up. Nothing more, the engine never produces a "JOIN command," only strings.</li>
+    <li style="margin-bottom:10px;"><strong style="color:var(--text)">Protocol, parsing</strong> splits the string into <code>Message{ command: "JOIN", params: ["#sk8"] }</code>. Still just reorganized data, nothing has happened yet.</li>
+    <li style="margin-bottom:10px;"><strong style="color:var(--text)">Protocol, dispatch</strong> looks up <code>"JOIN"</code> in a table, finds the handler, calls it. Still no logic run, pure routing.</li>
+    <li><strong style="color:var(--text)">Domain</strong> checks this against the real state of the system: does <code>#sk8</code> already exist, is Pedro allowed to join it, and who's already in the channel who needs to be told he just joined. Here the channel already exists: <code>ssin</code>, <code>schappuy</code> and <code>jkubaev</code> are already in it. So Pedro just becomes a regular member, not an operator, and all three of them get notified that he joined.</li>
+  </ol>
+  <div class="note">One sentence for the Protocol/Domain split: <strong style="color:var(--text)">Protocol figures out what was asked; Domain figures out whether it's allowed and what actually changes.</strong> Protocol never stores a list of channels — that state lives in Domain alone.</div>
+</section>
+
+<section id="overview">
+  <h2>The full chain</h2>
+  <p class="lead">We start here: raw TCP bytes. The OS’s network stack already did the real work: handshake, packets and retransmission. From there, ft_irc works in three layers: Engine frames bytes into lines, Protocol turns a line into a command, Domain turns a command into an actual change in the server's state.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 900 220" role="img" aria-label="The wire connects to Engine, Engine connects to Protocol, Protocol connects to Domain, with Domain at the end of the chain and nothing beyond it. Each boundary is labeled with what actually crosses it: raw bytes between the wire and Engine, complete lines between Engine and Protocol, parsed commands between Protocol and Domain.">
+      <defs>
+        <marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+      <g fill="none" stroke="var(--gray)">
+        <rect x="20" y="60" width="170" height="70" rx="8" fill="#1a1d22"/>
+      </g>
+      <text x="105" y="90" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="14">The Wire</text>
+      <text x="105" y="110" text-anchor="middle" fill="var(--text-dim)" font-size="11">raw TCP, the OS</text>
+
+      <line x1="190" y1="95" x2="250" y2="95" stroke="var(--gray)" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>
+      <text x="220" y="135" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">raw bytes</text>
+
+      <rect x="250" y="60" width="170" height="70" rx="8" fill="#17221f" stroke="var(--teal)"/>
+      <text x="335" y="90" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="14">ENGINE</text>
+      <text x="335" y="110" text-anchor="middle" fill="var(--text-dim)" font-size="11">sockets, poll()</text>
+
+      <line x1="420" y1="95" x2="480" y2="95" stroke="var(--amber)" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>
+      <text x="450" y="135" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">complete lines</text>
+
+      <rect x="480" y="60" width="170" height="70" rx="8" fill="#231d16" stroke="var(--amber)"/>
+      <text x="565" y="90" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="14">PROTOCOL</text>
+      <text x="565" y="110" text-anchor="middle" fill="var(--text-dim)" font-size="11">parse, dispatch</text>
+
+      <line x1="650" y1="95" x2="710" y2="95" stroke="var(--purple)" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/>
+      <text x="680" y="135" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">parsed commands</text>
+
+      <rect x="710" y="60" width="170" height="70" rx="8" fill="#201a28" stroke="var(--purple)"/>
+      <text x="795" y="90" text-anchor="middle" fill="var(--purple)" font-weight="700" font-size="14">DOMAIN</text>
+      <text x="795" y="110" text-anchor="middle" fill="var(--text-dim)" font-size="11">channels, rules</text>
+
+      <text x="795" y="165" text-anchor="middle" fill="var(--text-dim)" font-size="11">— end of the chain, nothing beyond this —</text>
+    </svg>
+  </div>
+
+<section id="engine">
+  <span class="tag e">Layer 1</span>
+  <h2>Engine</h2>
+  <p class="lead">Gets bytes on and off the wire. Doesn't know what a single one of them means.</p>
+
+  <p>Engine owns every socket in the project: the one listening socket, which never changes, and one fresh socket per connected client. Its entire job is turning a stream of raw bytes into complete lines on the way in, and turning outgoing messages back into bytes before they’re sent.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 150" role="img" aria-label="The wire on the left is real and always there. Engine in the middle is solid. Protocol on the right is dashed, marked as not built yet, since Engine can be built and tested without it.">
+      <defs><marker id="ar2" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="20" y="40" width="170" height="60" rx="8" fill="#1a1d22" stroke="var(--gray)"/>
+      <text x="105" y="65" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">The Wire</text>
+      <text x="105" y="83" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">real — nothing to simulate</text>
+      <line x1="190" y1="70" x2="260" y2="70" stroke="var(--gray)" stroke-width="1.6" marker-start="url(#ar2)" marker-end="url(#ar2)"/>
+      <rect x="260" y="40" width="180" height="60" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="350" y="75" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="14">ENGINE</text>
+      <line x1="440" y1="70" x2="510" y2="70" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 3" marker-start="url(#ar2)" marker-end="url(#ar2)"/>
+      <rect x="510" y="40" width="170" height="60" rx="8" fill="none" stroke="var(--amber)" stroke-dasharray="4 3"/>
+      <text x="595" y="65" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="13">Protocol</text>
+      <text x="595" y="83" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">not built yet — simulate it</text>
+    </svg>
+  </div>
+</section>
+
+<section id="protocol">
+  <span class="tag p">Layer 2</span>
+  <h2>Protocol</h2>
+  <p class="lead">Turns a line of text into a command and the result back into the exact reply IRC expects</p>
+
+  <p>When you type <code>/join #sk8</code> in WeeChat, this text gets converted (by WeeChat, so the client) to <code>JOIN #sk8\r\n</code> and this is RFC 2812's grammar: command name, space, parameters, terminated by <code>\r\n</code>.</p>
+
+  <p><strong>Parsing</strong> is the step right after that: turning <code>"JOIN #sk8"</code> into <code>Message{command: "JOIN", params: ["#sk8"]}</code>. Internal to the server, specifically so Dispatch has something to key a lookup on and call the right function with.</p>
+
+  <p><strong>Dispatch</strong> takes that command name, and maps it to a function pointer, a small object, or whatever you have in your code that actually runs it. Still no logic run yet, just routing. </p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 150" role="img" aria-label="Engine on the left is dashed, marked as not required to exist. Protocol in the middle is solid. Domain on the right is dashed, also marked as not required to exist, since Protocol can be built and tested with both neighbors faked.">
+      <defs><marker id="ar3" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="20" y="40" width="170" height="60" rx="8" fill="none" stroke="var(--teal)" stroke-dasharray="4 3"/>
+      <text x="105" y="65" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="13">Engine</text>
+      <text x="105" y="83" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">simulate it</text>
+      <line x1="190" y1="70" x2="260" y2="70" stroke="var(--teal)" stroke-width="1.6" stroke-dasharray="4 3" marker-start="url(#ar3)" marker-end="url(#ar3)"/>
+      <rect x="260" y="40" width="180" height="60" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.6"/>
+      <text x="350" y="75" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="14">PROTOCOL</text>
+      <line x1="440" y1="70" x2="510" y2="70" stroke="var(--purple)" stroke-width="1.6" stroke-dasharray="4 3" marker-start="url(#ar3)" marker-end="url(#ar3)"/>
+      <rect x="510" y="40" width="170" height="60" rx="8" fill="none" stroke="var(--purple)" stroke-dasharray="4 3"/>
+      <text x="595" y="65" text-anchor="middle" fill="var(--purple)" font-weight="700" font-size="13">Domain</text>
+      <text x="595" y="83" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">not built yet — simulate it</text>
+    </svg>
+  </div>
+</section>
+
+<section id="domain">
+  <span class="tag d">Layer 3</span>
+  <h2>Domain</h2>
+  <p class="lead">The actual rules: channels, membership, modes, who can do what to whom. The end of the chain.</p>
+
+  <table>
+    <thead><tr><th></th><th style="color:var(--amber)">Protocol</th><th style="color:var(--purple)">Domain</th></tr></thead>
+    <tbody>
+      <tr><td class="ok">Knows</td><td>the text of the command</td><td>the real state: channels, members, modes</td></tr>
+      <tr><td class="ok">Decides</td><td>what was asked</td><td>whether it's allowed, and what changes</td></tr>
+      <tr><td class="ok">Never does</td><td>checks permissions or channel state</td><td>parses text or touches a socket</td></tr>
+      <tr><td class="ok">On a JOIN</td><td>Just identifies the command and its target, nothing more</td><td>everything else: is it allowed (modes), apply it (create/update the channel), who gets told</td></tr>
+    </tbody>
+  </table>
+
+  <div class="diagram">
+    <svg viewBox="0 0 700 150" role="img" aria-label="Protocol on the left is dashed, marked as not required to exist. Domain in the middle is solid. On the right there is nothing — Domain is the end of the chain, so there is no neighbor to fake there.">
+      <defs><marker id="ar4" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+      <rect x="20" y="40" width="170" height="60" rx="8" fill="none" stroke="var(--amber)" stroke-dasharray="4 3"/>
+      <text x="105" y="65" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="13">Protocol</text>
+      <text x="105" y="83" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">simulate it</text>
+      <line x1="190" y1="70" x2="260" y2="70" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 3" marker-start="url(#ar4)" marker-end="url(#ar4)"/>
+      <rect x="260" y="40" width="180" height="60" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.6"/>
+      <text x="350" y="75" text-anchor="middle" fill="var(--purple)" font-weight="700" font-size="14">DOMAIN</text>
+      <text x="530" y="75" text-anchor="middle" fill="var(--text-dim)" font-size="12">— nothing here —</text>
+    </svg>
+  </div>
+</section>
+
+<section id="appendix">
+  <span class="tag" style="color:var(--text-dim)">Appendix</span>
+  <h2>What each layer actually owns</h2>
+
+  <h3 style="color:var(--teal); text-transform:none; font-size:16px; letter-spacing:0;">Engine</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 1000 260" role="img" aria-label="A tree diagram with Engine at the top, branching into five responsibilities: socket setup, accepting clients, the poll loop, buffering and framing, and disconnects and cleanup, each with two lines describing what it covers.">
+      <rect x="400" y="20" width="200" height="56" rx="10" fill="#17221f" stroke="var(--teal)" stroke-width="1.6"/>
+      <text x="500" y="54" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="16">ENGINE</text>
+
+      <line x1="500" y1="76" x2="500" y2="104" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="900" y2="104" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="100" y2="134" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="300" y1="104" x2="300" y2="134" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="500" y1="104" x2="500" y2="134" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="700" y1="104" x2="700" y2="134" stroke="var(--teal)" stroke-width="1.4"/>
+      <line x1="900" y1="104" x2="900" y2="134" stroke="var(--teal)" stroke-width="1.4"/>
+
+      <g>
+        <rect x="15" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1" opacity="0.9"/>
+        <text x="100" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Socket setup</text>
+        <text x="100" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">socket, bind, listen — once</text>
+        <text x="100" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">SO_REUSEADDR before bind</text>
+      </g>
+
+      <g>
+        <rect x="215" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1" opacity="0.9"/>
+        <text x="300" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Accepting clients</text>
+        <text x="300" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">accept() in a loop, drains backlog</text>
+        <text x="300" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">fcntl O_NONBLOCK on every new fd</text>
+      </g>
+
+      <g>
+        <rect x="415" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1" opacity="0.9"/>
+        <text x="500" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">The poll() loop</text>
+        <text x="500" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">one call watches every fd</text>
+        <text x="500" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">listening socket included</text>
+      </g>
+
+      <g>
+        <rect x="615" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1" opacity="0.9"/>
+        <text x="700" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Buffering &amp; framing</text>
+        <text x="700" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">per-client read/write buffers</text>
+        <text x="700" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">splits on \r\n, handles partial sends</text>
+      </g>
+
+      <g>
+        <rect x="815" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--teal)" stroke-width="1" opacity="0.9"/>
+        <text x="900" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Disconnects &amp; cleanup</text>
+        <text x="900" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">recv() == 0 means clean disconnect</text>
+        <text x="900" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">SIGINT closes every fd before exit</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3 style="color:var(--amber); text-transform:none; font-size:16px; letter-spacing:0;">Protocol</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 1000 260" role="img" aria-label="A tree diagram with Protocol at the top, branching into five responsibilities: parsing, registration, dispatch, connection-level commands, and reply formatting, each with two lines describing what it covers.">
+      <rect x="400" y="20" width="200" height="56" rx="10" fill="#231d16" stroke="var(--amber)" stroke-width="1.6"/>
+      <text x="500" y="54" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="16">PROTOCOL</text>
+
+      <line x1="500" y1="76" x2="500" y2="104" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="900" y2="104" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="100" y2="134" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="300" y1="104" x2="300" y2="134" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="500" y1="104" x2="500" y2="134" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="700" y1="104" x2="700" y2="134" stroke="var(--amber)" stroke-width="1.4"/>
+      <line x1="900" y1="104" x2="900" y2="134" stroke="var(--amber)" stroke-width="1.4"/>
+
+      <g>
+        <rect x="15" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--amber)" stroke-width="1" opacity="0.9"/>
+        <text x="100" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Parsing</text>
+        <text x="100" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">raw line → command + params</text>
+        <text x="100" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">handles the trailing : param rule</text>
+      </g>
+
+      <g>
+        <rect x="215" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--amber)" stroke-width="1" opacity="0.9"/>
+        <text x="300" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Registration</text>
+        <text x="300" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">PASS → NICK → USER → welcome</text>
+        <text x="300" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">blocks other commands until done</text>
+      </g>
+
+      <g>
+        <rect x="415" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--amber)" stroke-width="1" opacity="0.9"/>
+        <text x="500" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Dispatch</text>
+        <text x="500" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">command name → handler, via a map</text>
+        <text x="500" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">pure routing, no logic run yet</text>
+      </g>
+
+      <g>
+        <rect x="615" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--amber)" stroke-width="1" opacity="0.9"/>
+        <text x="700" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Connection commands</text>
+        <text x="700" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">PASS, NICK, USER, PING, QUIT</text>
+        <text x="700" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">handled directly, no Domain needed</text>
+      </g>
+
+      <g>
+        <rect x="815" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--amber)" stroke-width="1" opacity="0.9"/>
+        <text x="900" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Reply formatting</text>
+        <text x="900" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">every numeric — 001, 353, 433...</text>
+        <text x="900" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">turns Domain's result into wire text</text>
+      </g>
+    </svg>
+  </div>
+
+  <h3 style="color:var(--purple); text-transform:none; font-size:16px; letter-spacing:0;">Domain</h3>
+  <div class="diagram">
+    <svg viewBox="0 0 1000 260" role="img" aria-label="A tree diagram with Domain at the top, branching into five responsibilities: channel lifecycle, membership, modes, operator privileges, and broadcast decisions, each with two lines describing what it covers.">
+      <rect x="400" y="20" width="200" height="56" rx="10" fill="#201a28" stroke="var(--purple)" stroke-width="1.6"/>
+      <text x="500" y="54" text-anchor="middle" fill="var(--purple)" font-weight="700" font-size="16">DOMAIN</text>
+
+      <line x1="500" y1="76" x2="500" y2="104" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="900" y2="104" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="100" y1="104" x2="100" y2="134" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="300" y1="104" x2="300" y2="134" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="500" y1="104" x2="500" y2="134" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="700" y1="104" x2="700" y2="134" stroke="var(--purple)" stroke-width="1.4"/>
+      <line x1="900" y1="104" x2="900" y2="134" stroke="var(--purple)" stroke-width="1.4"/>
+
+      <g>
+        <rect x="15" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--purple)" stroke-width="1" opacity="0.9"/>
+        <text x="100" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Channel lifecycle</text>
+        <text x="100" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">created on first JOIN</text>
+        <text x="100" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">destroyed when empty</text>
+      </g>
+
+      <g>
+        <rect x="215" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--purple)" stroke-width="1" opacity="0.9"/>
+        <text x="300" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Membership</text>
+        <text x="300" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">tracks who's in each channel</text>
+        <text x="300" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">add on JOIN, remove on PART</text>
+      </g>
+
+      <g>
+        <rect x="415" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--purple)" stroke-width="1" opacity="0.9"/>
+        <text x="500" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Modes (i t k o l)</text>
+        <text x="500" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">invite-only · topic-protected</text>
+        <text x="500" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">key · operator · limit</text>
+      </g>
+
+      <g>
+        <rect x="615" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--purple)" stroke-width="1" opacity="0.9"/>
+        <text x="700" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Operator privileges</text>
+        <text x="700" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">grant/revoke with +o / -o</text>
+        <text x="700" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">gates KICK, TOPIC, INVITE, MODE</text>
+      </g>
+
+      <g>
+        <rect x="815" y="134" width="170" height="92" rx="8" fill="#13161b" stroke="var(--purple)" stroke-width="1" opacity="0.9"/>
+        <text x="900" y="158" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Broadcast decisions</text>
+        <text x="900" y="180" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">who gets notified, per action</text>
+        <text x="900" y="198" text-anchor="middle" fill="var(--text-dim)" font-size="10.5">JOIN echoes self, PRIVMSG doesn't</text>
+      </g>
+    </svg>
+  </div>
+</section>
+
+<section id="appendix2">
+  <span class="tag" style="color:var(--text-dim)">Appendix 2</span>
+  <h2>All three, connected</h2>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1100 600" role="img" aria-label="Three columns of five nodes each, Engine, Protocol, and Domain, with solid arrows showing the request path and dashed arrows showing the response path between specific nodes across the layers.">
+      <defs>
+        <marker id="arrowInt" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker>
+      </defs>
+
+      <text x="140" y="20" text-anchor="middle" fill="var(--teal)" font-weight="700" font-size="14">ENGINE</text>
+      <text x="550" y="20" text-anchor="middle" fill="var(--amber)" font-weight="700" font-size="14">PROTOCOL</text>
+      <text x="960" y="20" text-anchor="middle" fill="var(--purple)" font-weight="700" font-size="14">DOMAIN</text>
+
+      <!-- request-path arrows (solid) -->
+      <path d="M260 180 C 345 180, 345 75, 430 75" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M260 285 C 345 285, 345 180, 430 180" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M260 390 C 345 390, 345 390, 430 390" fill="none" stroke="var(--teal)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+
+      <path d="M670 390 C 755 390, 755 180, 840 180" fill="none" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M670 285 C 755 285, 755 75, 840 75" fill="none" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M670 285 C 755 285, 755 180, 840 180" fill="none" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M670 285 C 755 285, 755 285, 840 285" fill="none" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+      <path d="M670 285 C 755 285, 755 390, 840 390" fill="none" stroke="var(--amber)" stroke-width="1.5" marker-end="url(#arrowInt)"/>
+
+      <!-- response-path arrows (dashed) -->
+      <path d="M840 495 C 755 495, 755 495, 670 495" fill="none" stroke="var(--gray)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowInt)"/>
+      <path d="M430 495 C 345 495, 345 285, 260 285" fill="none" stroke="var(--gray)" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrowInt)"/>
+
+      <!-- ENGINE column -->
+      <g>
+        <rect x="20" y="40" width="240" height="70" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="140" y="68" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">Socket setup</text>
+        <text x="140" y="86" text-anchor="middle" fill="var(--text-dim)" font-size="10">(internal only)</text>
+      </g>
+      <g>
+        <rect x="20" y="145" width="240" height="70" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="140" y="180" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Accepting clients</text>
+      </g>
+      <g>
+        <rect x="20" y="250" width="240" height="70" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.6"/>
+        <text x="140" y="285" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Buffering &amp; framing</text>
+      </g>
+      <g>
+        <rect x="20" y="355" width="240" height="70" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="140" y="390" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Disconnects &amp; cleanup</text>
+      </g>
+      <g>
+        <rect x="20" y="460" width="240" height="70" rx="8" fill="#17221f" stroke="var(--teal)" stroke-width="1.2"/>
+        <text x="140" y="488" text-anchor="middle" fill="var(--text)" font-weight="700" font-size="13">The poll() loop</text>
+        <text x="140" y="506" text-anchor="middle" fill="var(--text-dim)" font-size="10">(internal only)</text>
+      </g>
+
+      <!-- PROTOCOL column -->
+      <g>
+        <rect x="430" y="40" width="240" height="70" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.2"/>
+        <text x="550" y="75" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Registration</text>
+      </g>
+      <g>
+        <rect x="430" y="145" width="240" height="70" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.2"/>
+        <text x="550" y="180" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Parsing</text>
+      </g>
+      <g>
+        <rect x="430" y="250" width="240" height="70" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.6"/>
+        <text x="550" y="285" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Dispatch</text>
+      </g>
+      <g>
+        <rect x="430" y="355" width="240" height="70" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.2"/>
+        <text x="550" y="390" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Connection commands</text>
+      </g>
+      <g>
+        <rect x="430" y="460" width="240" height="70" rx="8" fill="#231d16" stroke="var(--amber)" stroke-width="1.2"/>
+        <text x="550" y="495" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Reply formatting</text>
+      </g>
+
+      <!-- DOMAIN column -->
+      <g>
+        <rect x="840" y="40" width="240" height="70" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.2"/>
+        <text x="960" y="75" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Channel lifecycle</text>
+      </g>
+      <g>
+        <rect x="840" y="145" width="240" height="70" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.6"/>
+        <text x="960" y="180" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Membership</text>
+      </g>
+      <g>
+        <rect x="840" y="250" width="240" height="70" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.2"/>
+        <text x="960" y="285" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Modes</text>
+      </g>
+      <g>
+        <rect x="840" y="355" width="240" height="70" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.2"/>
+        <text x="960" y="390" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Operator privileges</text>
+      </g>
+      <g>
+        <rect x="840" y="460" width="240" height="70" rx="8" fill="#201a28" stroke="var(--purple)" stroke-width="1.2"/>
+        <text x="960" y="495" text-anchor="middle" dominant-baseline="central" fill="var(--text)" font-weight="700" font-size="13">Broadcast decisions</text>
+      </g>
+
+    </svg>
+  </div>
+
+</section>
+
+</div>
+
+<footer>/join #SoLuJa Poulette !</footer>
+
+</body>
+</html>
