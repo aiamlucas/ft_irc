@@ -1,0 +1,63 @@
+# --- Build artifacts (C++ / Makefile) ---
+*.o
+*.obj
+*.d
+*.gch
+*.out
+*.a
+*.so
+build/
+ircserv
+
+# Core dumps
+core
+core.*
+vgcore.*
+
+# Editors
+
+# --- Vim / Neovim ---
+*.swp
+*.swo
+*.swn
+*.un~
+*~
+.*.swp
+.*.swo
+Session.vim
+.netrwhist
+tags
+.vim/
+
+# --- VS Code ---
+.vscode/
+*.code-workspace
+
+# Operating systems
+
+# --- macOS ---
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.apdisk
+
+# --- Linux ---
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# --- Windows (in case anyone's on WSL) ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
