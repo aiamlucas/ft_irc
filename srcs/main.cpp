@@ -9,7 +9,7 @@
 #include <poll.h>			// poll
 
 // define the port the server is listening on ? #define SERVER_PORT 00 or only for client side ?
-#define INVALID_SOCKET -1
+#define ERROR -1
 
 using namespace std;
 
@@ -25,7 +25,7 @@ int	main(int argc, char *argv[])
 	/* if args != 3, return error msg w/ instructions */
 
 	char *endptr;
-	int listeningPort = static_cast<int>(strtol(argv[1], &endptr, 10));
+	int listeningPort = strtol(argv[1], &endptr, 10);	// cast to int or no need ?
 	// check that port is between 1 & 65535
 
 	// char *password = argv[2];	// For later
@@ -40,7 +40,7 @@ int	main(int argc, char *argv[])
 
 	// Create infinite loop here ? To accept every client connecting, or is that the job of poll()&co ?
 
-	if (socketFileDesc == INVALID_SOCKET)
+	if (socketFileDesc == ERROR)
 	{
 		cout << "Invalid Socket - Error : " << strerror(errno) << endl;
 		return 1;
@@ -67,28 +67,36 @@ int	main(int argc, char *argv[])
 		return 1;
 	}
 	else
+	{
 		cout << "Binding Success !\n";
+	}
 
-	listen(socketFileDesc, 3/* Max connections we want to authorize on this socket*/);
+	listen(socketFileDesc, 3/* Taille de la file d'attente des connexions pas acceptees*/);
 	// Add fail condition
 
-	pollfd new_Pollfd_Struct;
+// ============================ START HERE ==================================== //
+
+
+	pollfd *new_Pollfd_Struct;			// Do a container instead (vector ?)
 	memset(&new_Pollfd_Struct, 0, sizeof(new_Pollfd_Struct));
-	new_Pollfd_Struct.fd = socketFileDesc;	// FD I want to monitor
-	new_Pollfd_Struct.events = POLLIN ;		// Not sure - Check full list in man poll() - If many needed, separate with a pipe sign
-	// new_Pollfd_Struct.revents = ;		// No need ?
+	new_Pollfd_Struct->fd = socketFileDesc;	// FD I want to monitor
+	new_Pollfd_Struct->events = POLLIN ;		// = What is expected from this pollfd - Check full list in man poll() - If many needed, separate with a pipe sign
+	// new_Pollfd_Struct->revents = ;		// No need - Will be filled up automatically later. Read from it when necessary.
 
 	while (true)
 	{
-		if (poll(&new_Pollfd_Struct.fd, 1 /*amount of elements to analyse ?*/, 100) == -1)
+		if (poll(new_Pollfd_Struct, 1 /*amount of pollfd to analyse*/, 100) == ERROR)
 		{
 			cout << "poll failed - Error : " << strerror(errno) << endl;
 		}
-
-		socklen_t addrlen = sizeof(&serverSocket);	// Not sure
-		int	ClientSocket = accept(socketFileDesc, (struct sockaddr*) &serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
-		// Add fail condition
-
+		else
+		{
+			cout << "Poll Success !\n";
+			cout << "Test : [" << new_Pollfd_Struct->revents << "]\n";
+			socklen_t addrlen = sizeof(serverSocket);
+			int	ClientSocket = accept(socketFileDesc, (struct sockaddr*) &serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+			// Add fail condition
+		}
 	}
 	// Close all opened sockets before leaving
 	close(socketFileDesc);
