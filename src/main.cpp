@@ -6,7 +6,7 @@
 /*   By: lbueno-m <lbueno-m@student.42berlin.de>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/10/13 09:25:10 by lbueno-m          #+#    #+#             */
-/*   Updated: 2026/10/13 09:48:04 by lbueno-m         ###   ########.fr       */
+/*   Updated: 2026/10/14 10:52:06 by lbueno-m         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include <iostream>
 #include <string>
 
-#include "Server.hpp"
 #include "Utils.hpp"
 
 int main(int argc, char* argv[]) {
