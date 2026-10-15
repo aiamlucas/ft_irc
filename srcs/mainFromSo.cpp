@@ -42,11 +42,10 @@ int	main(int argc, char *argv[])
 
 	if (socketFileDesc == ERROR)
 	{
-		cout << "Invalid Socket - Error : " << strerror(errno) << endl;
+		cerr << "Invalid Socket - Error : " << strerror(errno) << endl;
 		return 1;
 	}
-	else
-		cout << "Socket FD is " << socketFileDesc << endl;
+	cout << "Socket FD is " << socketFileDesc << endl;
 
 	sockaddr_in serverSocket;		// different variables in struct sockaddr_un or sockaddr_in - If used, cast to (struct sockaddr *) before functions that requires that struct
 
@@ -54,26 +53,29 @@ int	main(int argc, char *argv[])
 // All answers about sockaddr structs might be there - Search Youtube also
 
 	// Reinitialiser struct car elle peut avoir des valeurs aleatoires
-	memset(&serverSocket, 0, sizeof(serverSocket));
+	// use bzero instead ?
+	bzero(&serverSocket, sizeof(serverSocket));
+	// memset(&serverSocket, 0, sizeof(serverSocket));	// either or
 
 	serverSocket.sin_family = AF_INET;
 	serverSocket.sin_port = htons(listeningPort);	// htons() converts the unsigned short integer hostshort from host byte order to network byte order
-	serverSocket.sin_addr.s_addr = INADDR_ANY;
+	serverSocket.sin_addr.s_addr = htons(INADDR_ANY);
 
 	if (bind(socketFileDesc, reinterpret_cast<sockaddr*>(&serverSocket), sizeof(serverSocket)) != 0)	// Try c++ cast instead
 	{
-		cout << "Binding failed - Error : " << strerror(errno) << endl;
+		cerr << "Binding failed - Error : " << strerror(errno) << endl;
 		close(socketFileDesc);
 		return 1;
 	}
-	else
+	cout << "Binding Success !\n";
+
+	if(listen(socketFileDesc, 3/* Taille de la file d'attente des connexions pas acceptees*/) != 0)
 	{
-		cout << "Binding Success !\n";
+		cerr << "Listening failed - Error : " << strerror(errno) << endl;
+		close(socketFileDesc);
+		return 1;
 	}
-
-	listen(socketFileDesc, 3/* Taille de la file d'attente des connexions pas acceptees*/);
-	// Add fail condition
-
+	cout << "Listening ...\n";
 // ============================ START HERE ==================================== //
 
 
@@ -87,7 +89,7 @@ int	main(int argc, char *argv[])
 	{
 		if (poll(new_Pollfd_Struct, 1 /*amount of pollfd to analyse*/, 100) == ERROR)
 		{
-			cout << "poll failed - Error : " << strerror(errno) << endl;
+			cerr << "poll failed - Error : " << strerror(errno) << endl;
 		}
 		else
 		{
@@ -96,6 +98,7 @@ int	main(int argc, char *argv[])
 			socklen_t addrlen = sizeof(serverSocket);
 			int	ClientSocket = accept(socketFileDesc, (struct sockaddr*) &serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
 			// Add fail condition
+			// Communication can start
 		}
 	}
 	// Close all opened sockets before leaving
