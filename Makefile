@@ -4,7 +4,8 @@ CC = c++
 
 CFLAGS = -g -std=c++98 #-Wall -Wextra -Werror
 
-SRCS =	mainFromSo.cpp
+SRCS =	src/main.cpp \
+		src/Utils.cpp \
 
 OBJS = $(SRCS:.cpp = .o)
 
