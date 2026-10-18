@@ -20,7 +20,7 @@ using namespace std;
 class Server
 {
 	private:
-		string	_password;		// Char* was too easy to access from the source code if stored that way - Option for a solution : store as a char array
+		string	_password;
 		int		_listeningPort;
 		int		_listeningSocketFD;
 		// sockaddr structs man : https://man7.org/linux/man-pages/man7/unix.7.html
@@ -50,8 +50,8 @@ void	Server::openSocket()
 
 	if (_listeningSocketFD == ERROR) {
 		cerr << "Invalid Socket - Error : " << strerror(errno) << endl;
-		exit(EXIT_FAILURE);()
-	}()
+		exit(EXIT_FAILURE);
+	}
 	cout << "Socket FD is " << _listeningSocketFD << endl;
 }
 
@@ -65,8 +65,8 @@ void	Server::bindSocket() {
 	if (bind(_listeningSocketFD, reinterpret_cast<sockaddr*>(&_serverSocket), sizeof(_serverSocket)) != 0)
 	{
 		cerr << "Binding failed - Error : " << strerror(errno) << endl;
-		close(_listeningSocketFD);()
-		exit(EXIT_FAILURE);()
+		close(_listeningSocketFD);
+		exit(EXIT_FAILURE);
 	}
 	cout << "Binding Success !\n";
 }
@@ -76,8 +76,8 @@ void	Server::listenSetUp()
 	if(listen(_listeningSocketFD, 4/*Size of queue for incoming connexions (not accepted yet)*/) != 0)
 	{
 		cerr << "Listening failed - Error : " << strerror(errno) << endl;
-		close(_listeningSocketFD);()
-		exit(EXIT_FAILURE);()
+		close(_listeningSocketFD);
+		exit(EXIT_FAILURE);
 	}
 	cout << "Listening ...\n";
 }
@@ -87,9 +87,9 @@ void	Server::pollAndAccept()
 	pollfd new_Pollfd_Struct[10];					// Do a container instead (vector ?)
 
 	memset(&new_Pollfd_Struct, 0, sizeof(new_Pollfd_Struct));
-	new_Pollfd_Struct[0].fd = _listeningSocketFD;		// FD I want to monitor
+	new_Pollfd_Struct[0].fd = _listeningSocketFD;	// FD I want to monitor
 	new_Pollfd_Struct[0].events = POLLIN ;			// = What is expected from this pollfd - Check full list in man poll() - If many needed, separate with a pipe sign
-	// new_Pollfd_Struct->revents = ;			// No need - Will be filled up automatically later. Read from it when necessary.
+	// new_Pollfd_Struct->revents = ;				// No need - Will be filled up automatically later. Read from it when necessary.
 
 	// TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 	while (SERVER_RUNNING)	// [TO DO] switch to false when signal received, to quit the program properly
@@ -98,8 +98,8 @@ void	Server::pollAndAccept()
 		if (poll(new_Pollfd_Struct, 10 /*amount of pollfd to analyse*/, 100) == ERROR)
 		{
 			cerr << "poll failed - Error : " << strerror(errno) << endl;
-		}()
-		els()e
+		}
+		else
 		{
 			cout << "Poll Success !\n";
 			cout << "Output r-events : [" << new_Pollfd_Struct->revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
