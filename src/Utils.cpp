@@ -9,11 +9,11 @@ int argsCheck(char *argv[]) {
         std::cerr
             << "Error: invalid port (must be a number between 1 and 65535)"
             << std::endl;
-        return -1;
+        return INVALID_ARGS;
     }
     if (password.empty()) {
         std::cerr << "Error: password cannot be empty" << std::endl;
-        return -1;
+        return INVALID_ARGS;
     }
 	return 1;
 }

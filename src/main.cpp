@@ -9,15 +9,13 @@ int	main(int argc, char *argv[])
         cerr << "Usage: " << argv[0] << " <port> <password>" << endl;
         return EXIT_FAILURE;
     }
-	if (argsCheck(argv) == ERROR)
+	if (argsCheck(argv) == INVALID_ARGS)
 		return EXIT_FAILURE;
 
 	Server OiPoulette(static_cast<int>(strtol(argv[1], NULL, 10)), argv[2]);
 
-	OiPoulette.openSocket();
-	OiPoulette.bindSocket();
-	OiPoulette.listenSetUp();
-	OiPoulette.pollAndAccept();
+	if (OiPoulette.openSocket() && OiPoulette.bindSocket() && OiPoulette.listenSetUp())
+		OiPoulette.pollAndAccept();
 
 	OiPoulette.closeBeforeExit();
 	return EXIT_SUCCESS;

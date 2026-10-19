@@ -1,4 +1,4 @@
-NAME = OiPoulette!
+NAME = ircserv
 
 CC = c++
 
@@ -6,6 +6,7 @@ CFLAGS = -g -std=c++98 #-Wall -Wextra -Werror
 
 SRCS =	src/main.cpp \
 		src/Utils.cpp \
+		src/engine/Server.cpp
 
 OBJS = $(SRCS:.cpp = .o)
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <climits>		// INT_MAX
 
-using namespace std;
+#define INVALID_ARGS -1
 
 int argsCheck(char *argv[]);
 bool safeAtoi(const char* str, int& result);
