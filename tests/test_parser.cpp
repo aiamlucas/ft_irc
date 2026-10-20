@@ -7,6 +7,10 @@
 #include "Message.hpp"
 #include "Parser.hpp"
 
+#define GREEN "\033[32m"
+#define RED "\033[31m"
+#define COLOR_OFF "\033[0m"
+
 static int g_total = 0;
 static int g_failed = 0;
 
@@ -23,10 +27,14 @@ static void expectParse(const std::string& line, const std::string& prefix,
     Message parsedLine = parseLine(line);
     g_total++;
     if (parsedLine.prefix == prefix && parsedLine.command == command &&
-        paramsToString(parsedLine.params) == params)
+        paramsToString(parsedLine.params) == params) {
+        std::cout << "\n"
+                  << GREEN << "OK: " << COLOR_OFF << "\"" << line << "\""
+                  << std::endl;
         return;
+    }
     g_failed++;
-    std::cerr << "FAIL: \"" << line << "\"\n"
+    std::cerr << RED << "FAIL: " << COLOR_OFF << "\"" << line << "\"\n"
               << " expected: prefix=[" << prefix << "] command=[" << command
               << "] params=[" << params << "]" << "\n"
               << " got: prefix=[" << parsedLine.prefix << "] command=["
@@ -72,6 +80,20 @@ int main() {
     expectParse(":ssin!abcd@192.168.1.105 PRIVMSG #42berlin :oieee pessoal!",
                 "ssin!abcd@192.168.1.105", "PRIVMSG",
                 "<#42berlin><oieee pessoal!>");
+
+    // Test 5
+    // extra spaces (should be ignored)
+    expectParse(":ssin!@bc   PRIVMSG           #sk8  :aee", "ssin!@bc",
+                "PRIVMSG", "<#sk8><aee>");
+
+    // Test 6
+    // a ':' inside the trailing param, should be a text
+    expectParse("PRIVMSG #sk8 :hey: there!", "", "PRIVMSG",
+                "<#sk8><hey: there!>");
+
+    // Test 7
+    // line ends at "\r\n"
+    expectParse("JOIN #archlinux\r\n", "", "JOIN", "<#archlinux>");
 
     std::cout << "\n"
               << (g_total - g_failed) << "/" << g_total << " tests passed"
