@@ -4,8 +4,8 @@
 #include <string>
 #include <vector>
 
-#include "../includes/Message.hpp"
-#include "../includes/Parser.hpp"
+#include "Message.hpp"
+#include "Parser.hpp"
 
 static int g_total = 0;
 static int g_failed = 0;
