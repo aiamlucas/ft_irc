@@ -8,6 +8,11 @@
 *.so
 build/
 ircserv
+test_protocol
+
+# --- clangd / language server ---
+compile_commands.json
+.cache/
 
 # Core dumps
 core
