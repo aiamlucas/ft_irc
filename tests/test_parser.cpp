@@ -26,7 +26,7 @@ static void expectParse(const std::string& line, const std::string& prefix,
         paramsToString(parsedLine.params) == params)
         return;
     g_failed++;
-    std::cerr << "FAIL \"" << line << "\"\n"
+    std::cerr << "FAIL: \"" << line << "\"\n"
               << " expected: prefix=[" << prefix << "] command=[" << command
               << "] params=[" << params << "]" << "\n"
               << " got: prefix=[" << parsedLine.prefix << "] command=["
@@ -73,7 +73,8 @@ int main() {
                 "ssin!abcd@192.168.1.105", "PRIVMSG",
                 "<#42berlin><oieee pessoal!>");
 
-    std::cout << (g_total - g_failed) << "/" << g_total << " passed"
+    std::cout << "\n"
+              << (g_total - g_failed) << "/" << g_total << " tests passed"
               << std::endl;
 
     if (g_failed) return EXIT_FAILURE;
