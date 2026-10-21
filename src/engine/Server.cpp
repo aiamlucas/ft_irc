@@ -14,7 +14,7 @@ bool	Server::openSocket()
 	_listeningSocketFD = socket(AF_INET /*IPv4 Internet protocols*/, SOCK_STREAM /*TCP*/, 0 /*default = TCP*/);
 
 	if (_listeningSocketFD == SYSCALL_ERROR) {
-		cerr << "Invalid Socket - Error : " << strerror(errno) << endl;
+		cerr << "Socket failed - Error : " << strerror(errno) << endl;
 		return false;
 	}
 	cout << "Socket FD is " << _listeningSocketFD << endl;
@@ -50,47 +50,53 @@ bool	Server::listenSetUp()
 	return true;
 }
 
+// TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 void	Server::pollAndAccept()
 {
-	// std::vector<pollfd> AllPollFDStructs;
-	// AllPollFDStructs.push_back
+	initAddPollFdStruct(_listeningSocketFD);
 
-	pollfd new_Pollfd_Struct[10];					// Do a container instead (vector ?)
-
-	memset(&new_Pollfd_Struct, 0, sizeof(new_Pollfd_Struct));
-	new_Pollfd_Struct[0].fd = _listeningSocketFD;	// FD I want to monitor
-	new_Pollfd_Struct[0].events = POLLIN ;			// = What is expected from this pollfd - Check full list in man poll() - If many needed, separate with a pipe sign
-	// new_Pollfd_Struct->revents = ;				// No need - Will be filled up automatically later. Read from it when necessary.
-
-	// TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 	while (SERVER_RUNNING)	// [TO DO] switch to false when signal received, to quit the program properly
 	{
-		// isoler listen socket initiale et la mettre dans struct utilisee par poll
-		if (poll(new_Pollfd_Struct, 10 /*amount of pollfd to analyse*/, 100) == SYSCALL_ERROR)
+		if (poll(&_AllPollFDStructs[0], static_cast<nfds_t>(_AllPollFDStructs.size()), -1) == SYSCALL_ERROR) // Man poll : "Specifying a negative value in timeout means an infinite timeout"
 		{
 			cerr << "poll failed - Error : " << strerror(errno) << endl;
 		}
 		else
 		{
-			cout << "Poll Success !\n";
-			cout << "Output r-events : [" << new_Pollfd_Struct->revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
+			cout << "Poll Success ! Listening on : " << _AllPollFDStructs[0].fd << "\n";
+			cout << "Output r-events : [" << _AllPollFDStructs[0].revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
 			socklen_t addrlen = sizeof(_serverSocket);
-			int	ClientSocket = accept(_listeningSocketFD, (struct sockaddr*) &_serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
-			// Add fail condition
-
-			// ATTENTION - accept() est bloquant, trouver un moyen pour que d'autres connexions soient possibles / reception de messages
-
-			// Ask password, make sure it match - Do that when everything else is working
-			// Add ClientSocket dans new_Pollfd_Struct
-			// Communication can start
-			// Check comment utiliser poll pour accepter plusieurs messages de differents clients simultanement
+			int	ClientSocket = accept(_AllPollFDStructs[0].fd, (struct sockaddr*) &_serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+			// CAUTION - accept() is blocking - Find a way that other connections / incoming messages are possible
+			if (ClientSocket == -1) {
+				cerr << "Client socket creation failed : " << strerror(errno) << endl;
+			}
+			else {
+				// Add last ClientSocket in _AllPollFDStructs :
+				initAddPollFdStruct(ClientSocket);
+				// TO DO : Use & setup client class once we have all the info from client
+			}
+			// TO DO : Ask password, make sure it matches - Do that when everything else is working
+			// Password accepted = Communication can start
 			cout << "*** DEBUG ***\n";
 			char buffer[20] = {0};
 			read(ClientSocket, buffer, 19);			// TESTTING / DEBUG ONLY - Delete when everything is functional
 			cout << buffer << endl;
-			// Si le client envoie autre chose, ca n'affiche rien car le serveur attend une nouvelle connexion - Faire qqch
+			// If client sends something else, it doesn't print because server is waiting for a new connection - Fix that
 		}
 	}
+}
+
+// _listeningSocket is at position [0] or (_AllPollFDStructs.begin())
+void	Server::initAddPollFdStruct(int socketFDToAdd)
+{
+	pollfd NewSocket;
+	memset(&NewSocket, 0, sizeof(NewSocket));
+	NewSocket.fd = socketFDToAdd;	// FD I want to monitor
+	NewSocket.events = POLLIN ;		// = What is expected from this pollfd - Check full list in man poll() or poll.h - If many needed, separate with a pipe sign
+	// NewSocket.revents = ;		// No need - Will be filled up automatically later. Read from it when necessary.
+
+	_AllPollFDStructs.push_back(NewSocket);
 }
 
 void	Server::closeBeforeExit() {

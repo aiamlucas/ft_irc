@@ -23,12 +23,14 @@ using std::string;
 class Server
 {
 	private:
-		string	_password;
-		int		_listeningPort;
-		int		_listeningSocketFD;
+		string		_password;
+		int			_listeningPort;
+		int			_listeningSocketFD;
 		// sockaddr structs man : https://man7.org/linux/man-pages/man7/unix.7.html
 		sockaddr_in	_serverSocket;		// struct sockaddr_un or sockaddr_in ? Either way, cast to (struct sockaddr *) before functions that requires that struct
 		// std::vector<Clients>;		// Comment out when ready to use
+		// pollfd		_listeningSocket;
+		std::vector<pollfd> _AllPollFDStructs;	// _listeningSocket is at position [0] or (.begin())
 
 	public:
 		Server(int port, const string& password);
@@ -40,6 +42,7 @@ class Server
 		bool	bindSocket();
 		bool	listenSetUp();
 		void	pollAndAccept();
+		void	initAddPollFdStruct(int socketFDToAdd);
 		void	closeBeforeExit();	// Close all opened sockets + FD before leaving
 };
 
