@@ -1,18 +1,22 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Utils.cpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lbueno-m <lbueno-m@student.42berlin.de>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/13 09:49:39 by lbueno-m          #+#    #+#             */
-/*   Updated: 2026/10/13 09:49:51 by lbueno-m         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
+#include "../includes/Utils.hpp"
 
-#include "Utils.hpp"
-
-#include <climits>
+int argsCheck(char *argv[]) {
+    std::string password = argv[2];
+    int port;
+    // Port numbers are 16-bit in TCP (0-65535) and 0 is already reserved for
+    // auto-select (when the OS picks any free port).
+    if (!safeAtoi(argv[1], port) || port < 1 || port > 65535) {
+        std::cerr
+            << "Error: invalid port (must be a number between 1 and 65535)"
+            << std::endl;
+        return INVALID_ARGS;
+    }
+    if (password.empty()) {
+        std::cerr << "Error: password cannot be empty" << std::endl;
+        return INVALID_ARGS;
+    }
+	return 1;
+}
 
 static bool checkOverFlow(int num, int digit, int sign) {
     if (sign == 1) {
