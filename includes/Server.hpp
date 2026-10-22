@@ -5,7 +5,7 @@
 #include <sys/types.h>		// socket()
 #include <sys/socket.h>		// socket()
 #include <sys/un.h>			// strerror()
-#include <arpa/inet.h>		// htonl()
+#include <arpa/inet.h>		// htons()
 #include <cerrno>			// errno()
 #include <stdlib.h>			// strtol
 #include <unistd.h>			// close
@@ -27,10 +27,11 @@ class Server
 		int			_listeningPort;
 		int			_listeningSocketFD;
 		// sockaddr structs man : https://man7.org/linux/man-pages/man7/unix.7.html
-		sockaddr_in	_serverSocket;		// struct sockaddr_un or sockaddr_in ? Either way, cast to (struct sockaddr *) before functions that requires that struct
+		sockaddr_in	_serverSocket;		// Cast to (struct sockaddr *) before functions that requires that struct
 		// std::vector<Clients>;		// Comment out when ready to use
 		// pollfd		_listeningSocket;
 		std::vector<pollfd> _AllPollFDStructs;	// _listeningSocket is at position [0] or (.begin())
+		// Buffer size 512 bits max (see Luca's error) + deal with max size
 
 	public:
 		Server(int port, const string& password);

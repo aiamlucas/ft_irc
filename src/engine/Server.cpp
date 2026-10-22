@@ -24,9 +24,11 @@ bool	Server::openSocket()
 bool	Server::bindSocket() {
 	memset(&_serverSocket, 0, sizeof(_serverSocket));	// To avoid garbage values
 
-	_serverSocket.sin_family = AF_INET;
-	_serverSocket.sin_port = htonl(_listeningPort);	// htonl() converts the unsigned short integer hostshort from host byte order to network byte order
-	_serverSocket.sin_addr.s_addr = htonl(INADDR_ANY);
+	_serverSocket.sin_family = AF_INET;					// Specify we'll be using a IPv4 address
+	_serverSocket.sin_port = htons(_listeningPort);		// Network port - FYI htons() converts the unsigned short integer hostshort from host byte order to the byte order used by network
+	// Note for Lucas : htons (rather than htonl) must always be used for ports, because ports are always 16 bits
+	_serverSocket.sin_addr.s_addr = htons(INADDR_ANY);	// IPv4 address - Here, every bit is 0 (INADDR_ANY is 0)
+	// INADDR_ANY is a specific address that means that the server listens to all the local IPv4 compatible with this socket
 
 	if (bind(_listeningSocketFD, reinterpret_cast<sockaddr*>(&_serverSocket), sizeof(_serverSocket)) != 0)
 	{
@@ -63,26 +65,35 @@ void	Server::pollAndAccept()
 		}
 		else
 		{
-			cout << "Poll Success ! Listening on : " << _AllPollFDStructs[0].fd << "\n";
-			cout << "Output r-events : [" << _AllPollFDStructs[0].revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
-			socklen_t addrlen = sizeof(_serverSocket);
-			int	ClientSocket = accept(_AllPollFDStructs[0].fd, (struct sockaddr*) &_serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
-			// CAUTION - accept() is blocking - Find a way that other connections / incoming messages are possible
-			if (ClientSocket == -1) {
-				cerr << "Client socket creation failed : " << strerror(errno) << endl;
+			// if (_AllPollFDStructs[0].revents == POLLIN)	// poll.h : #define POLLIN		0x001		/* There is data to read.  */
+			if (_AllPollFDStructs[0].revents != 0)		// poll.h : #define POLLIN		0x001		/* There is data to read.  */
+			{
+				cout << "Poll Success ! Listening on : " << _AllPollFDStructs[0].fd << "\n";
+				cout << "Output r-events : [" << _AllPollFDStructs[0].revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
+				cout << "FD : [" << _AllPollFDStructs[0].fd << "]\n";	// Will always be the listening fd (3) TBC
+				socklen_t addrlen = sizeof(_serverSocket);
+				int	ClientSocket = accept(_AllPollFDStructs[0].fd, (struct sockaddr*) &_serverSocket, &addrlen);	// args : int sockfd, struct sockaddr *addr, socklen_t *addrlen)
+				// CAUTION - accept() is blocking - Find a way that other connections / incoming messages are possible
+				if (ClientSocket == -1) {
+					cerr << "Client socket creation failed : " << strerror(errno) << endl;
+				}
+				else {
+					// Add last ClientSocket in _AllPollFDStructs :
+					initAddPollFdStruct(ClientSocket);
+					// TO DO : Use & setup client class once we have all the info from client
+					// TO DO : Ask password, make sure it matches - Do that when everything else is working
+					// Password accepted = Communication can start
+					// Use fcntl to make the client FD non blocking ? Not sure, investigate that
+					cout << "*** MSG RECEIVED ! ***\n";
+					char buffer[20] = {0};					// Use recv() instead when done testing
+					read(ClientSocket, buffer, 19);			// TESTTING / DEBUG ONLY - Delete when everything is functional
+					cout << buffer << endl;
+					// If client sends something else, it doesn't print because server is waiting for a new connection - Fix that/* code */
+				}
 			}
-			else {
-				// Add last ClientSocket in _AllPollFDStructs :
-				initAddPollFdStruct(ClientSocket);
-				// TO DO : Use & setup client class once we have all the info from client
-			}
-			// TO DO : Ask password, make sure it matches - Do that when everything else is working
-			// Password accepted = Communication can start
-			cout << "*** DEBUG ***\n";
-			char buffer[20] = {0};
-			read(ClientSocket, buffer, 19);			// TESTTING / DEBUG ONLY - Delete when everything is functional
-			cout << buffer << endl;
-			// If client sends something else, it doesn't print because server is waiting for a new connection - Fix that
+			// else {
+				// cout << "*** DEBUG ***\n";
+			// }
 		}
 	}
 }
