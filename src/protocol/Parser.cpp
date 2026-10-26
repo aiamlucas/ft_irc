@@ -21,6 +21,7 @@ static bool readWord(const std::string& line, std::size_t& pos,
         return false;
     }
     std::size_t end = line.find(' ', pos);
+    // no more spaces: this is the last word.
     if (end == std::string::npos) end = line.size();
     word = line.substr(pos, end - pos);
     pos = end;
@@ -48,10 +49,15 @@ static void toUpper(std::string& str) {
             static_cast<char>(std::toupper(static_cast<unsigned char>(str[i])));
 }
 
+// TODO: message length limit => 512 bytes. Maybe truncate it in the engine!
+// See the issue on github: Message length limit (512 bytes) #5
 Message parseLine(const std::string& receivedLine) {
     Message parsed;
     std::size_t pos = 0;
+
     // storing the line without "\r\n"
+    // this is a temporary solution, maybe should take out the "\r\n" direct in
+    // the engine
     const std::string line =
         receivedLine.substr(0, receivedLine.find_first_of("\r\n"));
 
