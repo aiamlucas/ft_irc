@@ -14,7 +14,7 @@
 static int g_total = 0;
 static int g_failed = 0;
 
-// {"#42berlin", "oie pessoal!"} -> "<#42berlin><oie pessoal!>"
+// {"#42berlin", "hey pessoal!"} -> "<#42berlin><hey pessoal!>"
 static std::string paramsToString(const std::vector<std::string>& params) {
     std::string result;
     for (std::size_t i = 0; i < params.size(); i++)
