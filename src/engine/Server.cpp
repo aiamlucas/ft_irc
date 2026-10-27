@@ -5,7 +5,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-Server::Server(int port, const string& password) : _listeningPort(port), _password(password) {}
+Server::Server(int port, const string& password) : _password(password), _listeningPort(port), _listeningSocketFD(-1) {}
 
 Server::~Server() {}
 
