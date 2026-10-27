@@ -6,10 +6,7 @@
 
 #include "Message.hpp"
 #include "Parser.hpp"
-
-#define GREEN "\033[32m"
-#define RED "\033[31m"
-#define COLOR_OFF "\033[0m"
+#include "colors.hpp"
 
 static int g_total = 0;
 static int g_failed = 0;
@@ -29,12 +26,12 @@ static void expectParse(const std::string& line, const std::string& prefix,
     if (parsedLine.prefix == prefix && parsedLine.command == command &&
         paramsToString(parsedLine.params) == params) {
         std::cout << "\n"
-                  << GREEN << "OK: " << COLOR_OFF << "\"" << line << "\""
+                  << CL_GREEN << "OK: " << RESET << "\"" << line << "\""
                   << std::endl;
         return;
     }
     g_failed++;
-    std::cerr << RED << "FAIL: " << COLOR_OFF << "\"" << line << "\"\n"
+    std::cerr << CL_RED << "FAIL: " << RESET << "\"" << line << "\"\n"
               << " expected: prefix=[" << prefix << "] command=[" << command
               << "] params=[" << params << "]" << "\n"
               << " got: prefix=[" << parsedLine.prefix << "] command=["
