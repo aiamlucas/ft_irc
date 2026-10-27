@@ -35,6 +35,7 @@ class Server
 		// pollfd		_listeningSocket;
 		std::vector<pollfd> _AllPollFDStructs;	// _listeningSocket is at position [0] or (.begin())
 		// Buffer size 512 bits max (see Luca's error) + deal with max size
+		// Luca's suggestion : take out the "\r\n" direct in the engine
 
 	public:
 		Server(int port, const string& password);
