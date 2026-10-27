@@ -95,6 +95,15 @@ int main() {
     // line ends at "\r\n"
     expectParse("JOIN #archlinux\r\n", "", "JOIN", "<#archlinux>");
 
+    // Test 8
+    // more than 15 params: keep the first 15
+    expectParse("MODE #42 +o 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17", "",
+                "MODE", "<#42><+o><1><2><3><4><5><6><7><8><9><10><11><12><13>");
+
+    // Test 13
+    // empty line: command stays empty
+    expectParse("", "", "", "");
+
     std::cout << "\n"
               << (g_total - g_failed) << "/" << g_total << " tests passed"
               << std::endl;
