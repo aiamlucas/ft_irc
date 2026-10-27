@@ -1,5 +1,6 @@
 #include "Parser.hpp"
 
+#include <cctype>
 #include <cstddef>
 #include <string>
 
@@ -31,9 +32,11 @@ static bool readWord(const std::string& line, std::size_t& pos,
 static void parseParams(const std::string& line, std::size_t& pos,
                         Message& parsed) {
     std::string word;
+    const std::size_t maxParams = 15;  // RFC 2812 - limit of 15 parameters
     while (true) {
         pos = line.find_first_not_of(' ', pos);
         if (pos == std::string::npos) return;
+        if (parsed.params.size() >= maxParams) return;
         if (line[pos] == ':') {
             parsed.params.push_back(line.substr(pos + 1));
             return;
