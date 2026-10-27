@@ -23,6 +23,9 @@ using std::string;
 class Server
 {
 	private:
+		Server(const Server &other);					// If they are public, anybody can copy a Server by accident.
+		Server &operator=(const Server &other);			// If they are public, anybody can copy a Server by accident.
+
 		string		_password;
 		int			_listeningPort;
 		int			_listeningSocketFD;
@@ -34,8 +37,6 @@ class Server
 
 	public:
 		Server(int port, const string& password);
-		Server(Server &other);					// TBC - Prob not required
-		Server &operator=(Server &other);		// TBC - Prob not required
 		~Server();
 
 		bool	openSocket();

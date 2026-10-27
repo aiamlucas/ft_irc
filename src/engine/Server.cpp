@@ -5,7 +5,7 @@ using std::cerr;
 using std::endl;
 using std::string;
 
-Server::Server(int port, const string& password) : _listeningPort(port), _password(password) {}
+Server::Server(int port, const string& password) : _password(password), _listeningPort(port), _listeningSocketFD(-1) {}
 
 Server::~Server() {}
 
@@ -25,8 +25,8 @@ bool	Server::bindSocket() {
 	memset(&_serverSocket, 0, sizeof(_serverSocket));	// To avoid garbage values
 
 	_serverSocket.sin_family = AF_INET;
-	_serverSocket.sin_port = htonl(_listeningPort);	// htonl() converts the unsigned short integer hostshort from host byte order to network byte order
-	_serverSocket.sin_addr.s_addr = htonl(INADDR_ANY);
+	_serverSocket.sin_port = htons(_listeningPort);	// htons() converts the unsigned short integer hostshort from host byte order to network byte order
+	_serverSocket.sin_addr.s_addr = htons(INADDR_ANY);
 
 	if (bind(_listeningSocketFD, reinterpret_cast<sockaddr*>(&_serverSocket), sizeof(_serverSocket)) != 0)
 	{
