@@ -1,6 +1,8 @@
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "Client.hpp"
+
 #include <iostream>
 #include <sys/types.h>		// socket()
 #include <sys/socket.h>		// socket()
@@ -29,10 +31,8 @@ class Server
 		string		_password;
 		int			_listeningPort;
 		int			_listeningSocketFD;
-		// sockaddr structs man : https://man7.org/linux/man-pages/man7/unix.7.html
 		sockaddr_in	_serverSocket;		// Cast to (struct sockaddr *) before functions that requires that struct
-		// std::vector<Clients>;		// Comment out when ready to use
-		// pollfd		_listeningSocket;
+		std::vector<Client>	_AllClientsStructs;
 		std::vector<pollfd> _AllPollFDStructs;	// _listeningSocket is at position [0] or (.begin())
 		// Buffer size 512 bits max (see Luca's error) + deal with max size
 		// Luca's suggestion : take out the "\r\n" direct in the engine
@@ -45,7 +45,9 @@ class Server
 		bool	bindSocket();
 		bool	listenSetUp();
 		void	pollAndAccept();
-		void	initAddPollFdStruct(int socketFDToAdd);
+		void	setUpNewSocket(int socketFDToAdd);
+		std::vector<pollfd>::iterator	receive_n_sendToParsing(int	ClientSocket, std::vector<pollfd>::iterator currentPos);
+		// PW check function
 		void	closeBeforeExit();	// Close all opened sockets + FD before leaving
 };
 
