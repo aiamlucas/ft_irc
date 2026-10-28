@@ -18,7 +18,9 @@ private:
 public:
     // Engine:
     Client(int fd);
+	~Client();
     int getFd() const;
+	std::string *getInBuffer();
     // Protocol
     void setNickname(const std::string& nick);
     // Protocol + Domain
