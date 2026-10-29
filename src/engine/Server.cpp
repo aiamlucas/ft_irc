@@ -23,7 +23,7 @@ bool	Server::openSocket()
 		cerr << CL_RED << "Socket failed - Error : " << strerror(errno) << RESET << endl;
 		return false;
 	}
-	cout << "Socket FD is " << _listeningSocketFD << endl;
+	cout << "Listening FD is " << _listeningSocketFD << endl;
 	return true;
 }
 
@@ -74,8 +74,8 @@ void	Server::pollAndAccept()
 			if (_pollfdParty[0].revents & POLLIN)	// poll.h : #define POLLIN		0x001		/* There is data to read.  */
 			// if (_pollfdParty[0].revents != 0)		// Do I need to check for revents other than POLLIN ?
 			{
-				cout << "Poll Success ! Listening on fd : " << _pollfdParty[0].fd << "\n";
-				cout << "Output r-events : [" << _pollfdParty[0].revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
+				// cout << "Poll Success ! Listening on fd : " << _pollfdParty[0].fd << "\n";
+				// cout << "Output r-events : [" << _pollfdParty[0].revents << "]\n";	// POLLHUP - Check s'il y a un revent qui n'est pas == 0 - Faire masque avec POLLIN (data to read)
 				acceptNewClient();
 			}
 		}
@@ -125,13 +125,8 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 	// TBC Can 2 cmds be in the same buffer ?
 
 	ssize_t bytesReceived = 0;
-	std::map<int, Client>::iterator SearchClientBuffer = _clientsParty.find(ClientSocket);
-
-// =============== START HERE / FIX THAT ==================== //
-
-	char *buffer = (*SearchClientBuffer).second.getInBuffer();
-	// char buffer[5] = {0};	// \n is automatically added in the buffer even if no line break happens (nc cmd)
-	bytesReceived = recv(ClientSocket, &buffer, 5, 0);	// FYI : Flag MSG_DONTWAIT enables nonblocking operation but used fcntl() instead
+	char buffer[8] = {0};	// \n is automatically added in the buffer even if no line break happens (nc cmd)
+	bytesReceived = recv(ClientSocket, &buffer, 8, 0);	// FYI : Flag MSG_DONTWAIT enables nonblocking operation but used fcntl() instead
 
 	// If client sends something else, it doesn't print because server is waiting for a new connection - Fix that
 	if (bytesReceived == -1)
@@ -148,21 +143,26 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 		return (_pollfdParty.erase(currentPos));		// Erase returns() an iterator to the following element
 	}
 
-	std::string bufferStack;
-	bufferStack.append(buffer);
+	std::map<int, Client>::iterator SearchClientBuffer = _clientsParty.find(ClientSocket);		// deal w/ edge case if find returns end (very low prob but good practice)
+	string& clientBuffer = (*SearchClientBuffer).second.getInBuffer();
 
-	if ((buffer[bytesReceived - 1]) != '\n')
-	{
-		cerr << CL_RED << "Command cropped (additional bytes incoming ...)\n" << RESET;
-		cout << "Buffer content : [" << buffer << "] - BuffStack : [" << bufferStack << "] From FD " << ClientSocket << " (" << bytesReceived << " bytes received)" << endl;
-		// the rest of the bits will still be received anyway after that
+	clientBuffer.append(buffer, bytesReceived);
+
+	if (clientBuffer.find('\n'/*, sizeof(clientBuffer)*/) == clientBuffer.npos) {
+		cout << CL_PURPLE_DIM << "Command cropped (additional bytes incoming ...)\n" << RESET;
 	}
-	else
-	{
-		// \n found, check if chars after that and send to parsing
-		cout << "Buffer content : [" << buffer << "] - BuffStack : [" << bufferStack << "] From FD " << ClientSocket << " (" << bytesReceived << " bytes received)" << endl;
+	else {
+		// Check if chars after line return and store them in buffer ?
+		cout << CL_BLUE_DIM << "Line return found - String is good to be handled by parsing\n" << RESET;
+		clientBuffer.at(clientBuffer.size() - 1) = '\0';
 	}
-	cout << " --------------\n";
+
+	cout	<< "Buffer content : [" << buffer
+			<< "] - Client inBuffer : [" << clientBuffer
+			<< "] From FD " << ClientSocket
+			<< " (" << bytesReceived << " bytes received)\n"
+			<< "\n --------------\n";
+
 	return currentPos;
 }
 

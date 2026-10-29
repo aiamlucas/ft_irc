@@ -4,7 +4,7 @@ Client::Client(int fd) : _fd(fd) {}
 
 Client::~Client() {}
 
-std::string*	Client::getInBuffer()
+std::string&	Client::getInBuffer()
 {
-	return &_inBuffer;
+	return _inBuffer;
 }
