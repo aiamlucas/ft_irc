@@ -153,8 +153,8 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 	}
 	else {
 		// Check if chars after line return and store them in buffer ?
-		cout << CL_BLUE_DIM << "Line return found - String is good to be handled by parsing\n" << RESET;
-		clientBuffer.at(clientBuffer.size() - 1) = '\0';
+		cout << CL_BLUE_DIM << "Line return found - String might good to be handled by parsing - Check IP ...\n" << RESET;
+		checkString(clientBuffer);
 	}
 
 	cout	<< "Buffer content : [" << buffer
@@ -164,6 +164,18 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 			<< "\n --------------\n";
 
 	return currentPos;
+}
+
+void	Server::checkString(string &clientBuffer)
+{
+	if (clientBuffer.size() > 510)
+	{
+		cerr << CL_RED_BOLD << "\t... Buffer is too long - Max 510 chars allowed\n\n" << RESET;
+		clientBuffer.erase();
+		return;
+	}
+	clientBuffer.at(clientBuffer.size() - 1) = '\0';
+	cerr << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;
 }
 
 // _listeningSocket is at position [0] or (_pollfdParty.begin())

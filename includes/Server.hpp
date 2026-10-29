@@ -48,10 +48,11 @@ class Server
 		bool	listenSetUp();
 		void	pollAndAccept();
 		void	acceptNewClient();
+		// PW check function
 		void	setUpNewSocket(int socketFDToAdd);
 		void	parsePollfds_n_receive();
 		std::vector<pollfd>::iterator	receive_n_sendToParsing(int	ClientSocket, std::vector<pollfd>::iterator currentPos);
-		// PW check function
+		void	checkString(string &clientBuffer);
 		void	closeBeforeExit();	// Close all opened sockets + FD before leaving
 };
 
