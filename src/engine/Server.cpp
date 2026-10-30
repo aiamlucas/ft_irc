@@ -102,7 +102,6 @@ void	Server::acceptNewClient()
 		setUpNewSocket(ClientSocket);
 		Client NewClient(ClientSocket);
 		_clientsParty.insert(std::pair<int, Client>(ClientSocket, NewClient));
-		// TO DO : Ask password, make sure it matches - Do that when everything else is working - Password accepted = Communication can start
 	}
 }
 
@@ -115,13 +114,8 @@ void	Server::parsePollfds_n_receive()
 			continue;
 		if ((*it).revents & POLLIN)
 			it = receive_n_sendToParsing((*it).fd, it);
-		else
+		else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) // POLLERR = Error condition	POLLHUP = Hung up (Full list in poll.h)
 		{
-/*
-#define POLLERR		0x008		// Error condition
-#define POLLHUP		0x010		// Hung up
-Full list in poll.h
-*/
 			cout << CL_RED_REVERT << "Debug - revents is not POLLIN : [" << "]\n" << RESET;
 			close((*it).fd);
 		}
@@ -186,7 +180,7 @@ void	Server::checkString(string &clientBuffer)
 		clientBuffer.erase();
 		return;
 	}
-	clientBuffer.at(clientBuffer.size() - 1) = '\0';
+	clientBuffer.erase(clientBuffer.end() - 1);
 	cerr << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;
 }
 
