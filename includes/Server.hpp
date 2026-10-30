@@ -16,11 +16,6 @@
 #include <vector>
 #include <map>
 
-using std::cout;
-using std::cerr;
-using std::endl;
-using std::string;
-
 #define SYSCALL_ERROR -1
 #define SERVER_RUNNING true
 

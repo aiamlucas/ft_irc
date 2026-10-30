@@ -15,7 +15,9 @@ Server::~Server() {}
 
 bool	Server::openSocket()
 {
-	_listeningSocketFD = socket(AF_INET /*IPv4 Internet protocols*/, SOCK_STREAM /*TCP*/, 0 /*default = TCP*/);
+	if ((_listeningSocketFD = socket(AF_INET /*IPv4 Internet protocols*/, SOCK_STREAM /*TCP*/, 0 /*default = TCP*/)) == -1)
+		cerr << CL_RED << "Issue w/ listening socket creation : " << strerror(errno) << " on listening socket fd : " << _listeningSocketFD << RESET << endl;
+
 	if (fcntl(_listeningSocketFD, F_SETFL, O_NONBLOCK) == -1)			// Only args allowed by subject
 		cerr << CL_RED << "Issue w/ fcntl() : " << strerror(errno) << " on listening socket fd : " << _listeningSocketFD << RESET << endl;
 
@@ -113,6 +115,16 @@ void	Server::parsePollfds_n_receive()
 			continue;
 		if ((*it).revents & POLLIN)
 			it = receive_n_sendToParsing((*it).fd, it);
+		else
+		{
+/*
+#define POLLERR		0x008		// Error condition
+#define POLLHUP		0x010		// Hung up
+Full list in poll.h
+*/
+			cout << CL_RED_REVERT << "Debug - revents is not POLLIN : [" << "]\n" << RESET;
+			close((*it).fd);
+		}
 		if (vecSiz != _pollfdParty.size())
 			it--;
 	}
