@@ -1,7 +1,8 @@
 #include "../includes/Utils.hpp"
 #include "../includes/Server.hpp"
 
-// From Windows : \\wsl$\Ubuntu\home\prunelle\00_Root\11_IRC\docs
+using std::cerr;
+using std::endl;
 
 int	main(int argc, char *argv[])
 {

@@ -1,4 +1,4 @@
-#include "../../includes/Server.hpp"
+#include "Server.hpp"
 #include "../../includes/colors.hpp"
 
 #define MAX_BUFFER_SIZE 512

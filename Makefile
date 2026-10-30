@@ -10,12 +10,9 @@ endif
 SRC     =  src/main.cpp
 SRC     += src/Utils.cpp
 SRC     += src/engine/Server.cpp
+SRC     += src/engine/Client.cpp
 SRC     += src/domain/Channel.cpp
 
-SRCS =	src/main.cpp \
-		src/Utils.cpp \
-		src/engine/Server.cpp \
-		src/engine/Client.cpp
 OBJ     =  $(SRC:.cpp=.o)
 
 TEST_NAME =  test_protocol

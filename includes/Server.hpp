@@ -25,7 +25,7 @@ class Server
 		Server(const Server &other);					// If they are public, anybody can copy a Server by accident.
 		Server &operator=(const Server &other);			// If they are public, anybody can copy a Server by accident.
 
-		string		_password;
+		std::string		_password;
 		int			_listeningPort;
 		int			_listeningSocketFD;
 		sockaddr_in	_serverSocket;		// Cast to (struct sockaddr *) before functions that requires that struct
@@ -35,7 +35,7 @@ class Server
 		// Luca's suggestion : take out the "\r\n" direct in the engine
 
 	public:
-		Server(int port, const string& password);
+		Server(int port, const std::string& password);
 		~Server();
 
 		bool	openSocket();
@@ -47,7 +47,7 @@ class Server
 		void	setUpNewSocket(int socketFDToAdd);
 		void	parsePollfds_n_receive();
 		std::vector<pollfd>::iterator	receive_n_sendToParsing(int	ClientSocket, std::vector<pollfd>::iterator currentPos);
-		void	checkString(string &clientBuffer);
+		void	checkString(std::string &clientBuffer);
 		void	closeBeforeExit();	// Close all opened sockets + FD before leaving
 };
 
