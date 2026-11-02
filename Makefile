@@ -10,6 +10,7 @@ endif
 SRC     =  src/main.cpp
 SRC     += src/Utils.cpp
 SRC     += src/engine/Server.cpp
+SRC     += src/engine/Client.cpp
 SRC     += src/domain/Channel.cpp
 
 OBJ     =  $(SRC:.cpp=.o)

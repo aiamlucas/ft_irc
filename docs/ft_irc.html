@@ -83,6 +83,363 @@
   footer{padding:30px 0; text-align:center; color:var(--text-dim); font-size:12.5px; font-family:var(--mono);}
 
   @media (max-width:640px){ nav{flex-wrap:wrap; gap:14px;} }
+
+  /* ===== Messaging section ===== */
+#messaging a{color:var(--prefix)}
+#messaging code{font-family:var(--mono);font-size:.88em;background:var(--panel2);padding:1px 6px;border-radius:4px;overflow-wrap:anywhere}
+#messaging p{color:var(--dim);font-size:15px;margin-bottom:12px;max-width:72ch}
+#messaging p b,#messaging li b,#messaging td b{color:var(--text)}
+#messaging ul.tight{margin:0 0 14px 20px;color:var(--dim);font-size:15px}
+#messaging ul.tight li{margin-bottom:6px;max-width:72ch}
+#messaging h2{font-size:22px;line-height:1.25;margin-bottom:6px;text-wrap:balance}
+#messaging h3{font-size:16px;margin-bottom:6px}
+#messaging .num{font-family:var(--mono);color:var(--dim);font-weight:400;margin-right:6px}
+#messaging .part{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);padding-top:36px;margin-bottom:-24px}
+#messaging .lead{margin-bottom:20px}
+#messaging .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin:14px 0}
+#messaging .scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+#messaging .chip{display:inline-block;font-family:var(--mono);font-size:11.5px;padding:1px 8px;border-radius:99px;border:1px solid currentColor;white-space:nowrap;vertical-align:middle}
+#messaging .chip.prefix{color:var(--prefix)}
+#messaging .chip.command{color:var(--command)}
+#messaging .chip.param{color:var(--param)}
+#messaging .chip.trailing{color:var(--trailing)}
+#messaging .chip.dimc{color:var(--dim)}
+#messaging .chip.rfc{color:var(--teal)}
+#messaging .chip.practice{color:var(--warn)}
+#messaging .chip.choice{color:var(--purple)}
+#messaging .chip.core{color:var(--ok)}
+#messaging .chip.op{color:var(--command)}
+#messaging .chip.opt{color:var(--dim)}
+#messaging .legend{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 2px}
+#messaging .callout{border-left:3px solid var(--amber);background:var(--panel);padding:10px 14px;border-radius:0 8px 8px 0;margin:14px 0;font-size:14.5px;color:var(--dim)}
+#messaging .callout b{color:var(--text)}
+#messaging .callout.ok{border-left-color:var(--ok)}
+#messaging .callout.bad{border-left-color:var(--err)}
+#messaging .flow{display:flex;flex-direction:column;align-items:stretch;gap:0;margin:16px 0}
+#messaging .node{border:1px solid var(--border);border-left-width:4px;border-radius:8px;padding:10px 14px;background:var(--panel)}
+#messaging .node b{display:block;font-size:15px}
+#messaging .node span{font-size:13px;color:var(--dim)}
+#messaging .node.a{border-left-color:var(--teal)}
+#messaging .node.b{border-left-color:var(--amber)}
+#messaging .node.c{border-left-color:var(--purple)}
+#messaging .node.d{border-left-color:var(--param)}
+#messaging .edge{font-family:var(--mono);font-size:12px;color:var(--dim);padding:6px 0 6px 18px}
+#messaging .edge::before{content:"↓  "}
+#messaging .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:14px 0}
+#messaging .card{background:var(--panel);border:1px solid var(--border);border-top-width:3px;border-radius:10px;padding:14px;min-width:0}
+#messaging .card.t1{border-top-color:var(--prefix)}
+#messaging .card.t2{border-top-color:var(--command)}
+#messaging .card.t3{border-top-color:var(--param)}
+#messaging .card.t4{border-top-color:var(--trailing)}
+#messaging .card p{font-size:14px;margin-bottom:8px}
+#messaging .card ul{margin:6px 0 0 18px;font-size:14px;color:var(--dim)}
+#messaging .card li{margin-bottom:6px}
+#messaging pre.code{font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--panel2);border-radius:8px;padding:10px 12px;overflow-x:auto;color:var(--text);margin:8px 0}
+#messaging pre.code .k{color:var(--command)}
+#messaging .pc{color:var(--dim)}
+#messaging .strip{display:flex;flex-wrap:wrap;gap:6px 2px;align-items:flex-start;margin:6px 0 4px}
+#messaging .tk{display:flex;flex-direction:column;align-items:center;min-width:0;max-width:100%}
+#messaging .tk .tx{font-family:var(--mono);font-size:15px;padding:4px 6px;border-radius:5px;border-bottom:3px solid var(--dim);background:var(--panel2);overflow-wrap:anywhere;white-space:pre-wrap}
+#messaging .tk .cap{font-size:11px;color:var(--dim);margin-top:4px;text-align:center;max-width:130px;line-height:1.25}
+#messaging .tk .cap b{color:var(--text);font-weight:600}
+#messaging .tk.prefix .tx{border-color:var(--prefix);color:var(--prefix)}
+#messaging .tk.command .tx{border-color:var(--command);color:var(--command);font-weight:600}
+#messaging .tk.param .tx{border-color:var(--param);color:var(--param)}
+#messaging .tk.trailing .tx{border-color:var(--trailing);color:var(--trailing)}
+#messaging .tk.sep .tx{background:transparent;border-color:transparent;color:var(--dim);padding:4px 0}
+#messaging .tk.sep .cap{display:none}
+#messaging .tk.col .tx{background:transparent;padding:4px 1px}
+#messaging .tk.col.prefix .tx{color:var(--prefix);opacity:.7}
+#messaging .tk.col.trailing .tx{color:var(--trailing);opacity:.7}
+#messaging .tk.eol .tx{background:transparent;border-color:transparent;color:var(--dim);font-size:13px}
+#messaging .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 16px}
+#messaging button{font:inherit;font-size:13px;color:var(--text);background:var(--panel2);border:1px solid var(--border);border-radius:7px;padding:6px 12px;cursor:pointer}
+#messaging button:hover{border-color:var(--dim)}
+#messaging button.on{background:var(--prefix);color:var(--onaccent);border-color:var(--prefix)}
+#messaging button:focus-visible,#messaging input:focus-visible,#messaging select:focus-visible{outline:2px solid var(--prefix);outline-offset:1px}
+#messaging button.preset{font-family:var(--mono);font-size:12px;padding:4px 9px}
+#messaging .cmdcard{background:var(--panel);border:1px solid var(--border);border-left:4px solid var(--command);border-radius:10px;padding:16px;margin:14px 0}
+#messaging .cmdcard h3{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:20px;margin-bottom:4px}
+#messaging .cmdcard h3 .nm{font-family:var(--mono);color:var(--command)}
+#messaging .syntax{font-family:var(--mono);font-size:13.5px;background:var(--panel2);border-radius:6px;padding:6px 10px;margin:6px 0 10px;overflow-x:auto;white-space:pre;color:var(--text)}
+#messaging .ex{border-top:1px dashed var(--border);padding-top:10px;margin-top:10px}
+#messaging .dir{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--dim);margin-bottom:2px}
+#messaging .dir .arrow{font-family:var(--mono);font-weight:600;padding:1px 8px;border-radius:5px;background:var(--panel2);color:var(--text)}
+#messaging .dir .arrow.c{color:var(--prefix)}
+#messaging .dir .arrow.s{color:var(--param)}
+#messaging .exnote{font-size:13px;color:var(--dim);max-width:72ch}
+#messaging table{width:100%;border-collapse:collapse;font-size:13.5px}
+#messaging th,#messaging td{text-align:left;padding:8px 10px;border:1px solid var(--border);vertical-align:top}
+#messaging thead th{background:var(--panel2);font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);font-weight:500;white-space:nowrap}
+#messaging td{color:var(--dim)}
+#messaging td.t{color:var(--text)}
+#messaging td code,#messaging th code{white-space:nowrap}
+#messaging .errs{margin-top:10px}
+#messaging .tips{margin:10px 0 0 18px;font-size:13.5px;color:var(--dim)}
+#messaging .tips li{margin-bottom:4px;max-width:72ch}
+#messaging input[type=text],#messaging select,#messaging textarea{width:100%;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:var(--mono);font-size:15px}
+#messaging input[type=range]{width:100%;accent-color:var(--prefix)}
+#messaging .row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:8px 0}
+#messaging .hint{font-size:12.5px;color:var(--dim);margin-top:6px}
+#messaging .line{font-family:var(--mono);font-size:14.5px;line-height:1.9;overflow-wrap:anywhere}
+#messaging .cur{background:color-mix(in srgb,var(--prefix) 28%,transparent);border-radius:2px}
+#messaging .dimc2{color:var(--dim)}
+#messaging .yes{color:var(--ok)}
+#messaging .no{color:var(--err)}
+#messaging .mid{color:var(--warn)}
+#messaging ul.steps{list-style:none;margin:8px 0 0}
+#messaging ul.steps li{font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:6px;margin-bottom:6px;background:var(--panel2);color:var(--dim);overflow-wrap:anywhere}
+#messaging ul.steps li b{color:var(--text)}
+@media (max-width:520px){#messaging .tk .cap{max-width:96px}
+}
+#messaging .cp{color:var(--prefix)}
+#messaging .cc{color:var(--command);font-weight:600}
+#messaging .cm{color:var(--param)}
+#messaging .ct{color:var(--trailing)}
+#messaging .lad{display:grid;grid-template-columns:auto auto auto 1fr;gap:4px 10px;align-items:baseline;padding:6px 10px;border-radius:6px;background:var(--panel);border:1px solid var(--border);margin-bottom:5px;font-size:13px}
+#messaging .lad .a{font-family:var(--mono);font-weight:600}
+#messaging .lad .arr{color:var(--dim);font-family:var(--mono)}
+#messaging .lad .ln{font-family:var(--mono);font-size:13px;overflow-wrap:anywhere;min-width:0}
+#messaging .lad.fromc{border-left:3px solid var(--prefix)}
+#messaging .lad.froms{border-left:3px solid var(--param)}
+#messaging .lad .lnote{grid-column:1/-1;color:var(--dim);font-size:12.5px;font-family:var(--sans)}
+#messaging .bytebar{position:relative;display:flex;height:38px;border-radius:7px;overflow:hidden;background:var(--panel2);border:1px solid var(--border)}
+#messaging .bytebar .sg{height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;color:var(--onaccent);overflow:hidden;white-space:nowrap;border-right:1px solid color-mix(in srgb,var(--bg) 60%,transparent)}
+#messaging .sg.prefix{background:var(--prefix)}
+#messaging .sg.command{background:var(--command)}
+#messaging .sg.param{background:var(--param)}
+#messaging .sg.trailing{background:var(--trailing)}
+#messaging .sg.sep{background:color-mix(in srgb,var(--dim) 55%,var(--panel2));color:var(--text)}
+#messaging .sg.crlf{background:var(--teal)}
+#messaging .sg.over{background:var(--err);color:#fff}
+#messaging .mark{position:absolute;top:0;bottom:0;width:0;border-left:2px dashed var(--text);opacity:.8;pointer-events:none}
+#messaging .marklbl{position:relative;height:18px;font-family:var(--mono);font-size:11px;color:var(--dim)}
+#messaging .marklbl span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+#messaging .scale{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--dim);margin-top:3px}
+#messaging .kv{display:flex;flex-wrap:wrap;gap:8px 22px;margin:10px 0;font-size:14px}
+#messaging .kv div{color:var(--dim)}
+#messaging .kv b{color:var(--text);font-family:var(--mono)}
+#messaging .pol{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:10px}
+#messaging .pol .card{padding:12px}
+#messaging .pol code.cut{background:color-mix(in srgb,var(--err) 22%,var(--panel2));text-decoration:line-through}
+#messaging .okc{color:var(--ok)}
+#messaging .badc{color:var(--err)}
+#messaging .cells{display:flex;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:15px;margin:10px 0 4px;overflow-x:auto}
+#messaging .cell{display:flex;flex-direction:column;align-items:center;min-width:1.05ch;padding:0 1px}
+#messaging .cell i{font-style:normal;font-size:8px;color:var(--dim);height:11px}
+#messaging .cell u{text-decoration:none;white-space:pre;border-bottom:3px solid transparent;padding:2px 1px}
+#messaging .cell.prefix u{border-color:var(--prefix);color:var(--prefix);background:color-mix(in srgb,var(--prefix) 12%,transparent)}
+#messaging .cell.command u{border-color:var(--command);color:var(--command);background:color-mix(in srgb,var(--command) 12%,transparent)}
+#messaging .cell.param u{border-color:var(--param);color:var(--param);background:color-mix(in srgb,var(--param) 12%,transparent)}
+#messaging .cell.trailing u{border-color:var(--trailing);color:var(--trailing);background:color-mix(in srgb,var(--trailing) 12%,transparent)}
+#messaging .cell b{font-size:11px;color:var(--text);height:13px;line-height:13px}
+#messaging .stepmsg{background:var(--panel2);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;padding:10px 14px;font-size:14px;color:var(--text);min-height:3.4em}
+#messaging .state{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+#messaging .st{font-family:var(--mono);font-size:12.5px;padding:4px 10px;border-radius:99px;border:1px solid var(--border);color:var(--dim);background:var(--panel2)}
+#messaging .st.on{color:var(--ok);border-color:var(--ok)}
+#messaging .st.big{font-size:13px;font-weight:600}
+#messaging .st.reg{color:var(--onaccent);background:var(--ok);border-color:var(--ok)}
+#messaging .st.closed{color:#fff;background:var(--err);border-color:var(--err)}
+#messaging .logbox{background:var(--panel2);border-radius:8px;padding:8px 10px;min-height:5em;max-height:300px;overflow:auto;font-family:var(--mono);font-size:12.5px;line-height:1.7}
+#messaging .logbox div{overflow-wrap:anywhere}
+#messaging .logbox .out{color:var(--dim)}
+#messaging .logbox .sys{color:var(--warn);font-family:var(--sans);font-size:12px}
+#messaging .sbx{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin:12px 0}
+#messaging .sbx .who{font-weight:600;margin-bottom:6px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+#messaging .sbx .who small{font-weight:400;color:var(--dim);font-family:var(--mono);font-size:11.5px}
+#messaging .chanbox{border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:6px 0;background:var(--panel);font-family:var(--mono);font-size:13px}
+#messaging .chanbox b{color:var(--command)}
+#messaging .mem{display:inline-block;margin-right:8px}
+#messaging .mem.op{color:var(--amber)}
+#messaging .step-btns{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+#messaging .rowline{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
+#messaging .rowline select{width:auto}
+#messaging .rowline input[type=text]{flex:1 1 220px;width:auto}
+#messaging .tag-op{color:var(--amber)}
+#messaging .nbar{height:14px;border-radius:4px;background:var(--panel2);overflow:hidden;margin:3px 0 0}
+#messaging .nbar i{display:block;height:100%;background:var(--param)}
+#messaging .nline{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+#messaging .cell.sep u{color:var(--dim)}
+#messaging .cell.cur u{outline:2px solid var(--amber);outline-offset:-1px}
+#messaging .lad .to{color:var(--dim);font-size:12.5px}
+#messaging details.nd{margin:2px 0 8px}
+#messaging details.nd summary{cursor:pointer;color:var(--dim);font-size:12.5px}
+#messaging details.nd code{display:block;overflow-wrap:anywhere;margin-top:4px;font-size:11.5px}
+#messaging .sbx .scr{background:var(--panel2);border-radius:8px;padding:8px 10px;height:210px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.55}
+#messaging .sbx .scr div{overflow-wrap:anywhere}
+#messaging .sbx .scr .out{color:var(--dim)}
+#messaging .sbx .scr .sys{color:var(--warn);font-family:var(--sans)}
+#messaging .cut{background:color-mix(in srgb,var(--err) 22%,var(--panel2));text-decoration:line-through}
+#messaging .actors{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px;margin:18px 0}
+#messaging .actor{border:1px solid var(--border);border-top:3px solid var(--prefix);border-radius:10px;background:var(--panel);padding:10px 16px;text-align:center;min-width:130px}
+#messaging .actor.srv{border-top-color:var(--command)}
+#messaging .actor b{display:block;font-family:var(--mono)}
+#messaging .actor span{font-size:12.5px;color:var(--dim);display:block}
+#messaging .actors .link{font-family:var(--mono);font-size:12px;color:var(--dim);text-align:center;line-height:1.3}
+#messaging .wcflow{margin:14px 0}
+#messaging .stage{border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:10px;background:var(--panel);padding:12px 16px}
+#messaging .stage.s2{border-left-color:var(--prefix)}
+#messaging .stage.s3{border-left-color:var(--command)}
+#messaging .stage.s4{border-left-color:var(--param)}
+#messaging .stage.s5{border-left-color:var(--err)}
+#messaging .stg-h{font-weight:600;margin-bottom:8px;display:flex;gap:10px;align-items:baseline}
+#messaging .stg-n{font-family:var(--mono);color:var(--dim);font-weight:400}
+#messaging .arr2{font-family:var(--mono);font-size:12.5px;color:var(--dim);padding:7px 0 7px 22px}
+#messaging .typed{display:block;font-family:var(--mono);font-size:14px;background:var(--panel2);border-radius:6px;padding:6px 10px;margin:4px 0}
+#messaging .screen{font-family:var(--mono);font-size:12.5px;background:var(--panel2);border-radius:6px;padding:8px 10px;margin-top:8px}
+#messaging .screen div{overflow-wrap:anywhere}
+#messaging .screen .j{color:var(--ok)}
+#messaging .screen .l{color:var(--err)}
+#messaging .screen .n{color:var(--dim)}
+#messaging .screen small{display:block;color:var(--dim);font-family:var(--sans);font-size:11.5px;margin-bottom:3px}
+#messaging .hxl{font-size:12px;color:var(--dim);margin-top:8px}
+#messaging .outrow{border-top:1px solid var(--border);padding:10px 0}
+#messaging .outrow:first-of-type{border-top:none;padding-top:2px}
+#messaging .outrow .to{font-size:13px;margin-bottom:2px;color:var(--text)}
+#messaging .outrow .to i{font-style:normal;color:var(--dim)}
+#messaging .outrow .wcs{font-family:var(--mono);font-size:12.5px;color:var(--dim);margin-top:2px}
+#messaging .stage ol{margin:0 0 0 20px;color:var(--dim);font-size:14.5px}
+#messaging .stage ol li{margin-bottom:4px}
+#messaging .errt td,#messaging .errt th{font-size:13px}
+#messaging .wl{font-family:var(--mono);font-size:15px;line-height:1.3;margin:6px 0 14px;overflow-wrap:anywhere}
+#messaging .wt{display:inline-block;vertical-align:top;margin:0 2px 2px 0}
+#messaging .wt small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--dim);margin-top:1px}
+#messaging .flow4{display:flex;flex-direction:column;margin:18px 0}
+#messaging .flow4 .fl{border:1px solid var(--border);border-left:4px solid var(--prefix);border-radius:10px;background:var(--panel);padding:10px 16px;font-size:14px;display:grid;grid-template-columns:150px 1fr;gap:4px 14px;align-items:baseline}
+#messaging .flow4 .fl.srv{border-left-color:var(--command)}
+#messaging .flow4 .fl b{font-family:var(--sans)}
+#messaging .flow4 .fl code{display:block;font-size:13.5px;overflow-wrap:anywhere}
+#messaging .flow4 .fl span{color:var(--dim);grid-column:2}
+#messaging .flow4 .fa{font-family:var(--mono);font-size:12.5px;color:var(--dim);padding:6px 0 6px 22px}
+@media (max-width:600px){#messaging .flow4 .fl{grid-template-columns:1fr}
+#messaging .flow4 .fl span{grid-column:1}
+}
+#messaging .dual{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px;margin-top:10px;align-items:start}
+@media (max-width:820px){#messaging .dual{grid-template-columns:minmax(0,1fr)}
+}
+#messaging .ladbox{max-height:620px;overflow-y:auto;padding-right:4px}
+#messaging .ladbox h3{margin:14px 0 6px;font-size:14.5px}
+#messaging .ladbox h3:first-child{margin-top:0}
+#messaging .lad{cursor:pointer;transition:opacity .15s}
+#messaging .lad.fut{opacity:.38}
+#messaging .lad.cur{outline:2px solid var(--amber);outline-offset:0;background:var(--panel2)}
+#messaging .lad.sys{border-left:3px solid var(--dim);color:var(--dim)}
+#messaging .lad .tags{grid-column:1/-1;display:flex;gap:6px;flex-wrap:wrap}
+#messaging .irc-wrap{margin-bottom:12px}
+#messaging .irc-name{font-size:12.5px;color:var(--dim);margin-bottom:4px;font-family:var(--mono)}
+#messaging .irc{border:1px solid var(--border);border-radius:8px;overflow:hidden;background:#0c0e12;color:#d7dce2;font-family:var(--mono);font-size:12px}
+#messaging .irc-title{background:#1c2430;padding:4px 10px;color:#cfe3ff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#messaging .irc-main{display:flex;height:170px}
+#messaging .irc-chat{flex:1 1 auto;min-width:0;overflow-y:auto;padding:6px 8px}
+#messaging .irc-nicks{flex:0 0 96px;border-left:1px solid #26303d;padding:6px 8px;overflow:hidden;color:#b9c2cc}
+#messaging .irc-nicks div.op{color:#f2c45a}
+#messaging .ml{display:grid;grid-template-columns:auto 5.2ch 1fr;gap:0 8px;line-height:1.5}
+#messaging .ml .mt{color:#6b7683}
+#messaging .ml .mp{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#messaging .ml.j .mp{color:#7ddc8f}
+#messaging .ml.l .mp{color:#ff7b7b}
+#messaging .ml.n .mp{color:#8a95a1}
+#messaging .ml.n .mm{color:#9aa3ad}
+#messaging .ml.m .mp.a{color:#6cb6ff}
+#messaging .ml.m .mp.b{color:#7ddc8f}
+#messaging .ml .mm{overflow-wrap:anywhere}
+#messaging .irc-bar{background:#1c2430;padding:3px 10px;display:flex;gap:10px;align-items:center;color:#9fb0c3;font-size:11.5px;flex-wrap:wrap}
+#messaging .irc-bar button{all:unset;cursor:pointer;padding:0 4px;border-radius:3px;color:#9fb0c3}
+#messaging .irc-bar button.on{background:#2f6fb7;color:#fff}
+#messaging .irc-bar .off{color:#ff7b7b}
+#messaging .irc-input{padding:5px 10px;border-top:1px solid #26303d;min-height:26px;color:#d7dce2}
+#messaging .irc-input .hl{background:#3d3a1c;color:#ffe08a;padding:0 4px;border-radius:3px}
+#messaging .irc-input span.d{color:#6b7683}
+#messaging .blk{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;background:var(--panel);cursor:pointer;transition:opacity .15s}
+#messaging .blk.cur{outline:2px solid var(--amber);outline-offset:0}
+#messaging .blk.fut{opacity:.4}
+#messaging .blk.done{opacity:.85}
+#messaging .blk-h{font-weight:600;font-size:15px}
+#messaging .blk-h .stg-n{margin-right:6px}
+#messaging .blk .ess{font-size:14px;margin:2px 0 6px;color:var(--text)}
+#messaging .blk .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+#messaging .blk .lad{cursor:inherit;margin-bottom:4px}
+#messaging .blk .lad .chip{white-space:normal}
+#messaging .ml.new{background:rgba(242,196,90,.12)}
+#messaging .blk .tags .chip{white-space:normal;border-radius:10px;line-height:1.4;padding:2px 10px}
+#messaging .blk .see{font-size:13.5px;color:var(--text);margin:0 0 8px;padding:4px 8px;border-left:3px solid var(--amber);background:var(--panel2);border-radius:0 6px 6px 0}
+#messaging .lad-g{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:8px 0 4px}
+#messaging .blk .ess{margin:6px 0}
+#messaging .ml.m .mp.c{color:#e0a3ff}
+#messaging .cmdtag{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:var(--command);border:1px solid currentColor;border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:1px}
+#messaging .cw-index{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 12px}
+#messaging .cw-index button{font-family:var(--mono);font-size:12px;padding:3px 10px}
+#messaging .cw-index button.on{outline:2px solid var(--command)}
+#messaging .irc-bar button.act{background:#c9822b;color:#10151b}
+#messaging .msg-in{width:100%;font-family:var(--mono);font-size:15px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);margin:4px 0 14px}
+#messaging .msg-in:focus-visible{outline:2px solid var(--teal);outline-offset:1px}
+#messaging .toks{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:flex-start;font-family:var(--mono);font-size:16px;margin:4px 0 14px}
+#messaging .tok{display:inline-flex;flex-direction:column;border-top:3px solid currentColor;padding:5px 9px 3px;background:var(--panel2);border-radius:0 0 6px 6px;max-width:100%}
+#messaging .tok code{background:none;padding:0;color:inherit;font-size:inherit;overflow-wrap:anywhere}
+#messaging .tok small{font-family:var(--sans);font-size:11.5px;color:var(--dim);margin-top:2px}
+#messaging .tok.prefix{color:var(--prefix)}
+#messaging .tok.command{color:var(--command)}
+#messaging .tok.param{color:var(--param)}
+#messaging .tok.trailing{color:var(--trailing)}
+#messaging .msg-struct{font-family:var(--mono);font-size:13px;background:var(--panel2);border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre-wrap;overflow-wrap:anywhere;margin:0 0 10px}
+#messaging .chip.bad{color:var(--err)}
+#messaging .syntax.big{font-size:17px;margin-bottom:14px;overflow-wrap:anywhere}
+#messaging .crlf{color:var(--dim)}
+#messaging .anat{list-style:none;margin:0;padding:0;display:grid;gap:9px}
+#messaging .anat li{line-height:1.55}
+#messaging .anat .chip{margin-right:6px}
+#messaging .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:700px){#messaging .two{grid-template-columns:1fr}
+}
+#messaging .cmdgroup{margin:30px 0 6px;font-size:18px}
+#messaging .cmdgroup + p{color:var(--dim);margin:0 0 10px}
+#messaging .ex-btn{font:inherit;font-family:var(--mono);font-size:12.5px;color:var(--text);background:var(--panel2);border:1px solid var(--border);border-radius:99px;padding:3px 11px;cursor:pointer}
+#messaging .ex-btn:hover,#messaging .ex-btn:focus-visible,#messaging .ex-btn[aria-pressed="true"]{border-color:var(--teal)}
+#messaging .wrow{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline;margin:12px 0 10px;font-size:13.5px;min-height:24px}
+#messaging .wrow .wl{font-size:12px;color:var(--dim);font-family:var(--sans)}
+#messaging .wrow code{font-family:var(--mono);background:var(--panel2);border:1px solid var(--border);border-radius:6px;padding:2px 8px;overflow-wrap:anywhere}
+#messaging .wrow .wn{color:var(--dim);font-size:12.5px}
+#messaging .dir .arrow.w{color:var(--teal)}
+#messaging .cmdcard .step{margin-top:12px}
+#messaging .cmdcard .step:first-of-type{margin-top:6px}
+#messaging .cmdcard .wrow{margin:0 0 6px}
+#messaging .cmdcard .sep{border:0;border-top:1px dashed var(--border);margin:14px 0 2px}
+#messaging .toks.plain .tok{color:var(--dim);background:var(--panel2)}
+#messaging .toks.plain .tok code{color:var(--text)}
+#messaging .parts{display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:6px 0 0}
+#messaging .parts dt{font-weight:600}
+#messaging .parts dd{margin:0;line-height:1.55}
+@media(max-width:600px){#messaging .parts{grid-template-columns:1fr;gap:2px}
+#messaging .parts dd{margin-bottom:10px}
+}
+#messaging h3.sub{margin:30px 0 10px;font-size:18px}
+#messaging .flow{display:grid;gap:4px;margin-top:12px}
+#messaging .flow-arrow{color:var(--dim);font-size:13px;padding-left:4px}
+#messaging .flow .wrow{margin:0}
+#messaging .flow .wl{min-width:150px}
+#messaging .flow .wrow{min-height:0}
+#messaging .lbl{font-size:12.5px;color:var(--dim);margin-bottom:2px}
+#messaging .noln small{display:none}
+#messaging .codeblk{font-family:var(--mono);font-size:12.5px;line-height:1.55;background:var(--panel2);border-radius:8px;padding:12px 14px;overflow-x:auto;color:var(--text);margin:0 0 14px;white-space:pre}
+#messaging .tblwrap{overflow-x:auto;margin:0 0 14px}
+#messaging .tblwrap td:nth-child(3){min-width:200px}
+#messaging .tblwrap table{table-layout:fixed;min-width:560px}
+#messaging .tblwrap td:nth-child(1){width:64px}
+#messaging .tblwrap td:nth-child(2){width:220px}
+#messaging .tblwrap td:nth-child(4){width:96px}
+#messaging .tblwrap td:nth-child(3){min-width:0}
+#messaging .nr-why{margin:12px 0 0;color:var(--text);max-width:68ch}
+
+#messaging{--panel2:#1a1e25;--dim:var(--text-dim);--prefix:#6cb6ff;--command:#f2a65a;--param:#7ddc8f;--param2:#4fb872;--trailing:#f68fb8;--ok:#7ddc8f;--warn:#f2c45a;--err:#ff7b7b;--onaccent:#06121f}
+#messaging code{color:var(--text)}
+#messaging h3{text-transform:none;letter-spacing:0;color:var(--text);font-weight:600;font-size:16px;margin:0 0 6px}
+#messaging h3.mhead{font-size:20px;font-weight:700;margin:0 0 6px}
+#messaging h3.sub,#messaging h3.cmdgroup{text-transform:uppercase;letter-spacing:.05em;font-size:14px;font-weight:500;color:var(--text-dim);margin:30px 0 12px}
+#messaging .mpart{margin-top:0}
+#messaging .mpart + .mpart{margin-top:44px;padding-top:36px;border-top:1px solid var(--border)}
+#messaging .msg-struct{border:0}
+#messaging p{max-width:680px}
+#messaging table{margin:0}
 </style>
 </head>
 <body>
@@ -99,6 +456,7 @@
     <a class="d" href="#domain">Domain</a>
     <a href="#appendix">Appendix</a>
     <a href="#appendix2">Integration</a>
+    <a href="#messaging">Messaging</a>
   </nav>
 </header>
 
@@ -146,9 +504,9 @@
   <h3>What IRC actually is</h3>
   <p>IRC is the most iconic chat program ever written. It ran most of real-time internet communication through the 90s and into the early 2000s, before people migrated toward more centralized platforms: ICQ, MSN, later WhatsApp.</p>
 
-  <p>One of the main things those later programs quietly dropped was the public room. On IRC, if you liked a band, you joined <code>#radiohead</code>. Into skateboarding? You joined <code>#skateboard</code>, made friends, then discovered that <code>#sk8</code> was about the exact same thing, just way cooler and with way more people on it. That community-building mostly disappeared for two decades, until Discord brought a version of the same shape back, but this time build as an Electron app, without IRC's terminal elegance.</p>
+  <p>One of the main things those later programs quietly dropped was the public room. On IRC, if you liked a band, you joined <code>#radiohead</code>. Into skateboarding? You joined <code>#skateboard</code>, made friends, then discovered that <code>#sk8</code> was about the exact same thing, just way cooler and with way more people on it. That community-building mostly disappeared for two decades, until Discord brought a version of the same shape back, but this time as a centralized service run by a single company, build as Electron app and without IRC's terminal elegance.</p>
 
-  <p>IRC is genuinely decentralized: no company owns the network, no app store gatekeeps the client, no central database holds everyone's messages. Anyone can stand up their own server. A real IRC network is literally many independently-run servers linked together (server-to-server is half of the protocol). A handful of plain-text commands over one TCP connection is the entire thing.</p>
+  <p>IRC, by contrast, is decentralized: no company owns the network, no app store gatekeeps the client, no central database holds everyone's messages. Anyone can stand up their own server. A real IRC network is literally many independently-run servers linked together (server-to-server is half of the protocol). A handful of plain-text commands over one TCP connection is the entire thing.</p>
 
   <p>Communication has since gotten more and more centralized. A handful of companies running the whole stack end to end. Because of that, and because of what that kind of control increasingly means for surveillance, newer projects have been born, circling back to IRC's original idea of decentralization. Matrix is the clearest modern attempt: open, but a far more complex protocol, built for today's surveillance reality, with encryption baked in from the start, the Olm and Megolm cryptographic ratchets, roughly Signal-grade, applied to every room. A nice and a necessary piece of software to have.</p>
 
@@ -592,9 +950,564 @@
 
 </section>
 
+<section id="messaging">
+  <span class="tag" style="color:var(--text-dim)">Messaging</span>
+  <h2>How clients and the server talk</h2>
+  <p class="lead">The IRC message, the commands we need first, the numeric replies, and one whole conversation, step by step.</p>
+  <div class="mpart" id="messaging-message">
+  <h3 class="mhead"><span class="num">1</span>The IRC message</h3>
+  <p class="lead">IRC is plain text over TCP. Everything the client sends and everything the server answers is a <b>message</b>: one line of text that ends with <code>\r\n</code>. A message has up to four parts.</p>
+
+  <div class="panel">
+    <div id="msg-anat"></div>
+    <dl class="parts">
+      <dt>prefix</dt><dd>Optional. Who the message comes from: <code>nick!user@host</code>. A client normally does not send one. The server adds it when it passes a message on to the other clients, so they know who spoke.</dd>
+      <dt>command</dt><dd>What to do. A word (<code>JOIN</code>, <code>PRIVMSG</code>) or, in the server's answers, a 3-digit number (<code>001</code>, <code>433</code>).</dd>
+      <dt>params</dt><dd>The details the command needs, for example the channel to join or the person to write to. Separated by spaces, up to 15, and none of them can contain a space.</dd>
+      <dt>trailing</dt><dd>The last parameter. It starts with <code>:</code> and takes the rest of the line, so it can contain spaces. The <code>:</code> is not part of the text.</dd>
+      <dt>size</dt><dd>At most <b>512 bytes</b>, counting the <code>\r\n</code> at the end.</dd>
+    </dl>
+  </div>
+
+  <h3 class="sub">IRC client (WeeChat)</h3>
+  <div class="panel">
+    <p style="margin-top:0">In an IRC client you don't type the entire message. You type a shorter one, like <code>/join #sk8</code>, and the client translates it into the real message.</p>
+    <div class="flow">
+      <div class="wrow"><span class="wl">IRC client (WeeChat)</span><code>/join #sk8</code></div>
+      <div class="flow-arrow" aria-hidden="true">→</div>
+      <div class="wrow"><span class="wl">IRC message</span><code>JOIN #sk8\r\n</code></div>
+    </div>
+    <p>The server only ever receives the IRC message. In WeeChat you can turn on the display of the raw messages, to see exactly what is sent and received.</p>
+    <div class="wrow"><span class="wl">WeeChat:</span><code>/server raw</code></div>
+    <p class="hint">This opens the raw messages buffer. If your version does not know it, check <code>/help server</code> (newer versions use <code>/irc raw</code>). Close the buffer with <code>/buffer close</code>.</p>
+  </div>
+
+  <h3 class="sub">Examples</h3>
+  <p class="lead" style="margin-top:0">Pick a message, or type your own line.</p>
+  <div class="panel">
+    <div class="chips" id="msg-ex" role="group" aria-label="Example messages"></div>
+    <div id="msg-wc" class="wrow"></div>
+    <label class="hint" for="msg-in">The message</label>
+    <input id="msg-in" class="msg-in" type="text" spellcheck="false" autocomplete="off">
+    <div id="msg-out" aria-live="polite"></div>
+  </div>
+</div>
+  <div class="mpart" id="messaging-commands">
+  <h3 class="mhead"><span class="num">2</span>IRC commands</h3>
+  <p class="lead">The <b>command</b> is the word that says what to do: it is the first word of an IRC message (after the prefix, if there is one). <code>/help</code> in WeeChat lists the commands your client knows. IRC has many, the classic ones come from RFC 2812 and newer ones from extensions (IRCv3, for example <code>CAP</code>). We only need some of them, here are examples. Each one shows what you type, the message that is sent, and the server's answer. The server is called <code>oiPoulette</code>.</p>
+  <div id="cmd-groups"></div>
+</div>
+  <div class="mpart" id="messaging-numerics">
+  <h3 class="mhead"><span class="num">3</span>Numeric replies</h3>
+  <p class="lead">Most replies from the server are messages whose command is a <b>3-digit number</b>, like <code>001</code> or <code>332</code>. The client reacts to the number. The text at the end is only for people.</p>
+
+  <div class="panel">
+    <ul class="anat">
+      <li>The number always has 3 digits: <code>001</code>, not <code>1</code>.</li>
+      <li>The first parameter is always the nick of the user the reply is for. Before registration there is no nick yet, so the server writes <code>*</code>.</li>
+      <li>The text after the <code>:</code> is for humans. The client looks at the number and at the parameters before it.</li>
+      <li>Numbers from <b>400</b> up are errors. The ones below are normal replies.</li>
+    </ul>
+  </div>
+
+  <h3 class="sub">Examples</h3>
+  <p class="lead" style="margin-top:0">Pick a reply to see its parts and when the server sends it.</p>
+  <div class="panel">
+    <div class="chips" id="nr-ex" role="group" aria-label="Example replies"></div>
+    <div id="nr-out" aria-live="polite"></div>
+  </div>
+
+  <h3 class="sub">The numbers used in this document</h3>
+  <p class="lead" style="margin-top:0">The last column says how much a client depends on it. <span class="chip core">needed</span> the client breaks without it. <span class="chip rfc">expected</span> the RFC asks for it, a client mostly just shows it. <span class="chip opt">optional</span> many servers send it, you can leave it out.</p>
+  <div id="nr-tables"></div>
+
+  <h3 class="sub">Where to look them up</h3>
+  <div class="panel">
+    <ul class="anat">
+      <li><b>RFC 2812, section 5</b>: 5.1 lists the replies (<code>332</code>, <code>353</code>, <code>366</code>…), 5.2 lists the errors (<code>401</code>, <code>433</code>…).</li>
+    </ul>
+  </div>
+</div>
+  <div class="mpart" id="messaging-simulation">
+  <h3 class="mhead"><span class="num">4</span>IRC Simulation</h3>
+  <p class="lead">We go step by step. On the <b>left</b> are the messages, in order. On the <b>right</b> is what the users see in WeeChat.</p>
+  <div class="panel">
+    <div class="step-btns">
+      <button id="cv-reset">■ Reset</button><button id="cv-prev">◀ Back</button><button id="cv-next">Next ▶</button><button id="cv-play">▶ Play</button>
+      <span id="cv-count" class="hint" style="align-self:center"></span>
+    </div>
+    <div class="dual">
+      <div class="dual-l"><div id="cv-ladder" class="ladbox" aria-label="raw protocol lines"></div></div>
+      <div class="dual-r">
+        <div class="irc-wrap"><div class="irc-name">ssin's client</div><div id="cv-ssin"></div></div>
+        <div class="irc-wrap"><div class="irc-name">pedro's client</div><div id="cv-pedro"></div></div>
+      </div>
+    </div>
+      </div>
+  </div>
+</section>
+
 </div>
 
 <footer>/join #SoLuJa Poulette !</footer>
 
+<script>
+(function(){
+'use strict';
+var esc=function(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+var $=function(id){return document.getElementById(id);};
+
+/* ---------- parser used only to draw tokens ---------- */
+function parseIRC(line){
+  var pos=0,prefix=null,e;
+  if(line.charAt(0)===':'){e=line.indexOf(' ');if(e<0)e=line.length;prefix=line.slice(1,e);pos=e;}
+  var rest=line.slice(pos).replace(/^ +/,'');
+  var sp=rest.indexOf(' ');
+  var command=sp<0?rest:rest.slice(0,sp);
+  var r=sp<0?'':rest.slice(sp);
+  var params=[];
+  while(true){
+    r=r.replace(/^ +/,'');
+    if(!r)break;
+    if(r.charAt(0)===':'){params.push({t:r.slice(1),tr:true});break;}
+    var s=r.indexOf(' ');
+    if(s<0){params.push({t:r,tr:false});break;}
+    params.push({t:r.slice(0,s),tr:false});r=r.slice(s);
+  }
+  return {prefix:prefix,command:command,params:params};
+}
+function lineInfo(line){return new TextEncoder().encode(line).length+2;}
+
+/* static strips in the page */
+Array.prototype.forEach.call(document.querySelectorAll('[data-line]'),function(el){
+  var names=null;try{names=JSON.parse(el.getAttribute('data-names')||'null');}catch(x){}
+  el.innerHTML=strip(el.getAttribute('data-line'),names);
+});
+
+/* ====== new: byte helpers, tokenizer, colouring ====== */
+var ENC=new TextEncoder();
+function nbytes(s){return ENC.encode(s).length;}
+function cutBytes(s,max){var out='',n=0,a=Array.from(s),i;for(i=0;i<a.length;i++){var b=nbytes(a[i]);if(n+b>max)break;out+=a[i];n+=b;}return out;}
+function pieces(line){
+  var out=[],i=0,n=line.length,e;
+  function sp(){var s=i;while(i<n&&line.charAt(i)===' ')i++;if(i>s)out.push({r:'sep',t:line.slice(s,i)});}
+  if(line.charAt(0)===':'){e=line.indexOf(' ');if(e<0)e=n;out.push({r:'prefix',t:line.slice(0,e)});i=e;}
+  sp();
+  e=line.indexOf(' ',i);if(e<0)e=n;
+  if(e>i)out.push({r:'command',t:line.slice(i,e)});
+  i=e;
+  while(i<n){
+    sp();if(i>=n)break;
+    if(line.charAt(i)===':'){out.push({r:'trailing',t:line.slice(i)});i=n;break;}
+    e=line.indexOf(' ',i);if(e<0)e=n;
+    out.push({r:'param',t:line.slice(i,e)});i=e;
+  }
+  return out;
+}
+var ROLECLS={prefix:'cp',command:'cc',param:'cm',trailing:'ct'};
+function colorize(line){
+  return pieces(line).map(function(p){return ROLECLS[p.r]?'<span class="'+ROLECLS[p.r]+'">'+esc(p.t)+'</span>':esc(p.t);}).join('');
+}
+
+
+/* ====== simple message display: coloured parts, a label only where it helps ====== */
+function wcObvious(n){return !n||/^(channel|target.*|nick|nickname|new nickname|mask|you|text|password|username|realname|welcome text)$/.test(n);}
+function strip(line,names){
+  var m=parseIRC(line),h='<div class="wl">';
+  if(m.prefix!==null)h+='<span class="wt cp">:'+esc(m.prefix)+'</span> ';
+  h+='<span class="wt cc">'+esc(m.command)+'</span>';
+  m.params.forEach(function(p,i){
+    var nm=names&&names[i],lab=wcObvious(nm)?'':esc(nm);
+    if(p.tr)lab=(lab?lab+' · ':'')+'trailing';
+    h+=' <span class="wt '+(p.tr?'ct':'cm')+'">'+(p.tr?':':'')+esc(p.t===''?'(empty)':p.t)+(lab?'<small>'+lab+'</small>':'')+'</span>';
+  });
+  return h+'</div>';
+}
+
+/* ====== 1. conversation: one step = one visible change in a client window ====== */
+var SRV='oiPoulette',CH='#sk8',CH2='#42';
+var TOPIC='Sk8 - welcome to skateboard \\o/ (o)=(o)';
+var TOPIC2='Piscine day 12 - ask a friend before you google';
+var CVA='ssin!ssin@127.0.0.1',CVB='pedro!pedro@127.0.0.1',CVC='schappuy!schappuy@127.0.0.1';
+function cvMk(){return {status:[],ch:{},order:[],connected:false,view:'status'};}
+function cvJoin(S,who,name,nicks){var c=S[who];if(!c.ch[name]){c.ch[name]={lines:[],nicks:nicks||[],topic:''};c.order.push(name);}c.view=name;}
+function cvLn(S,who,buf,cls,p,m,pc){var L=buf==='status'?S[who].status:S[who].ch[buf].lines;L.push({t:S._t,p:p,m:m,c:cls,pc:pc||'',b:S._b});}
+function cvNote(S,who,buf,text){cvLn(S,who,buf,'n','--',text);}
+var CVBLK=[
+ {t:'ssin types /connect ft_irc',ess:'ssin tells her client to connect to the server. Nothing is sent to the server yet.',
+  see:'ssin\'s input line shows the command.',start:{kind:'user',text:'ssin types: /connect ft_irc'},typed:{ssin:'/connect ft_irc'},rows:[]},
+ {t:'The TCP connection opens',ess:'The client opens a TCP connection. The server accepts it and creates an empty Client that is not registered. No IRC line is sent yet.',
+  see:'ssin\'s server window prints "connecting" and "connected".',start:{kind:'client',text:'the client does this by itself'},
+  rows:[{k:'sys',a:'ssin',line:'TCP connection opens (no IRC line yet)',note:'Server side: accept() gives a new socket and you create the Client. The server sends nothing and waits for the first line.'}],
+  fx:function(S){cvNote(S,'ssin','status','irc: connecting to server localhost/6667...');cvNote(S,'ssin','status','irc: connected to localhost (127.0.0.1)');}},
+ {t:'ssin\'s client registers, the server welcomes ssin',ess:'The client sends what is in its settings: an optional question about extensions, then the password, the nick and the user. When all three have arrived, the server answers with the welcome.',
+  see:'ssin\'s server window prints the first welcome line.',start:{kind:'client',text:'the client does this by itself, from its settings (ssin typed nothing)'},
+  rows:[
+   {k:'c',a:'ssin',g:'Optional: capability negotiation',line:'CAP LS 302',note:'The client asks: which extensions do you support?'},
+   {k:'s',a:'ssin',line:':'+SRV+' CAP * LS :',note:'None (empty list). "*" stands for the nick, not set yet.'},
+   {k:'c',a:'ssin',line:'CAP END',note:'Done asking.'},
+   {k:'c',a:'ssin',g:'Required: registration',line:'PASS secret',note:'The connection password, before NICK and USER.'},
+   {k:'c',a:'ssin',line:'NICK ssin',note:'From the client\'s settings.'},
+   {k:'c',a:'ssin',line:'USER ssin 0 * :Ssin Dupont',note:'From the settings. With PASS and NICK, ssin is registered.'},
+   {k:'s',a:'ssin',g:'Welcome',line:':'+SRV+' 001 ssin :Welcome to the Internet Relay Network '+CVA,note:'You are registered.'}],
+  fx:function(S){S.ssin.connected=true;cvNote(S,'ssin','status','Welcome to the Internet Relay Network '+CVA);}},
+ {t:'Server information: host and version',ess:'002 says which host and software version the server runs. Clients just print it.',
+  see:'One more line in ssin\'s server window.',start:{kind:'server',text:'the server sends this by itself'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 002 ssin :Your host is '+SRV+', running version 1.0'}],
+  fx:function(S){cvNote(S,'ssin','status','Your host is '+SRV+', running version 1.0');}},
+ {t:'Server information: creation date',ess:'003 says when the server was created (here two months ago). It is only text.',
+  see:'One more line in ssin\'s server window.',start:{kind:'server',text:'the server sends this by itself'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 003 ssin :This server was created Fri Aug 28 2026'}],
+  fx:function(S){cvNote(S,'ssin','status','This server was created Fri Aug 28 2026');}},
+ {t:'Server information: name and modes',ess:'004 repeats the server name and version, then lists the mode letters the server knows: user modes ("o") and channel modes ("itkol"). "itkol" is a list of letters (i, t, k, o, l), not a name.',
+  see:'One more line in ssin\'s server window.',start:{kind:'server',text:'the server sends this by itself'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 004 ssin '+SRV+' 1.0 o itkol',note:'Mode letters. User mode: o (operator). Channel modes: i invite-only, t topic locked, k key, o operator, l user limit.'}],
+  fx:function(S){cvNote(S,'ssin','status',SRV+' 1.0 o itkol');}},
+ {t:'Features and message of the day',ess:'005 lists the server\'s features and limits. Then the MOTD ("message of the day"): with one the server sends 375 (start), one 372 per text line and 376 (end); without one a single 422, as here. Either way the client knows the welcome is over.',
+  see:'"MOTD File is missing" appears. The 005 line is read silently by the client and not shown.',start:{kind:'server',text:'the server sends this by itself'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 005 ssin CHANTYPES=# CHANMODES=,k,l,it PREFIX=(o)@ NICKLEN=30 :are supported by this server'},
+        {k:'s',a:'ssin',line:':'+SRV+' 422 ssin :MOTD File is missing',note:'MOTD = message of the day, a welcome text the server can show. This server has none.'}],
+  fx:function(S){cvNote(S,'ssin','status','MOTD File is missing');}},
+ {t:'ssin types /join '+CH,ess:'The client sends JOIN. The channel does not exist, so the server creates it and makes ssin its operator. A client with an auto-join list sends this line by itself.',
+  see:'ssin\'s input line shows the command.',start:{kind:'user',text:'ssin types: /join '+CH},typed:{ssin:'/join '+CH},
+  rows:[{k:'c',a:'ssin',line:'JOIN '+CH}]},
+ {t:'The server confirms the join',ess:'The server echoes the JOIN back to the joiner. That is how the client knows it worked.',
+  see:'ssin\'s channel window opens, with the line "ssin has joined '+CH+'".',start:{kind:'server',text:'the server answers ssin'},
+  rows:[{k:'s',a:'ssin',line:':'+CVA+' JOIN '+CH}],
+  fx:function(S){cvJoin(S,'ssin',CH);cvLn(S,'ssin',CH,'j','-->','ssin (ssin@127.0.0.1) has joined '+CH);}},
+ {t:'The server sends the topic status and the names',ess:'No topic yet (331). Then the names list (353): who is in the channel, with "@" for an operator. 366 always ends the list.',
+  see:'ssin\'s nick list shows @ssin.',start:{kind:'server',text:'the server answers ssin'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 331 ssin '+CH+' :No topic is set'},
+        {k:'s',a:'ssin',line:':'+SRV+' 353 ssin = '+CH+' :@ssin',note:'"=" is a public channel.'},
+        {k:'s',a:'ssin',line:':'+SRV+' 366 ssin '+CH+' :End of NAMES list'}],
+  fx:function(S){S.ssin.ch[CH].nicks=['@ssin'];cvNote(S,'ssin',CH,'Nicks '+CH+': [@ssin]');}},
+ {t:'ssin types /topic',ess:'ssin sets the channel topic. Her client waits for the server\'s answer before it shows anything.',
+  see:'ssin\'s input line shows the command.',start:{kind:'user',text:'ssin types: /topic '+TOPIC},typed:{ssin:'/topic '+TOPIC},
+  rows:[{k:'c',a:'ssin',line:'TOPIC '+CH+' :'+TOPIC,note:'The text can contain spaces (trailing).'}]},
+ {t:'The server announces the new topic',ess:'The server sends the change to every member of the channel. The sender gets it too.',
+  see:'ssin\'s window title shows the topic, and a line "ssin has changed topic" appears.',start:{kind:'server',text:'the server answers ssin'},
+  rows:[{k:'s',a:'ssin',line:':'+CVA+' TOPIC '+CH+' :'+TOPIC}],
+  fx:function(S){S.ssin.ch[CH].topic=TOPIC;cvNote(S,'ssin',CH,'ssin has changed topic for '+CH+' to "'+TOPIC+'"');}},
+ {t:'pedro types /join '+CH,ess:'pedro is already registered (the same steps as for ssin, not shown). He joins the channel that now exists.',
+  see:'pedro\'s input line shows the command.',start:{kind:'user',text:'pedro types: /join '+CH},typed:{pedro:'/join '+CH},
+  rows:[{k:'c',a:'pedro',line:'JOIN '+CH}]},
+ {t:'Everybody in the channel is told that pedro joined',ess:'One action of the server, two clients change: the member who was already inside is told about the newcomer, and pedro gets the echo.',
+  see:'ssin\'s window prints "pedro has joined" and her nick list adds pedro. pedro\'s channel window opens.',start:{kind:'server',text:'the server answers both'},
+  rows:[{k:'s',a:'ssin',line:':'+CVB+' JOIN '+CH,note:'To ssin, who was in the channel.'},
+        {k:'s',a:'pedro',line:':'+CVB+' JOIN '+CH,note:'To pedro: the echo.'}],
+  fx:function(S){S.ssin.ch[CH].nicks.push('pedro');cvLn(S,'ssin',CH,'j','-->','pedro (pedro@127.0.0.1) has joined '+CH);cvJoin(S,'pedro',CH);cvLn(S,'pedro',CH,'j','-->','pedro (pedro@127.0.0.1) has joined '+CH);}},
+ {t:'pedro receives the topic',ess:'The channel has a topic now, so pedro gets 332 with it (ssin got 331, "no topic", when she created the channel). Many servers add 333: who set the topic and when. It is not in the RFC, so it is optional.',
+  see:'pedro\'s window title shows the topic, and two lines appear: the topic, and who set it.',start:{kind:'server',text:'the server answers pedro'},
+  rows:[{k:'s',a:'pedro',line:':'+SRV+' 332 pedro '+CH+' :'+TOPIC},
+        {k:'s',a:'pedro',line:':'+SRV+' 333 pedro '+CH+' '+CVA+' 1793187660',note:'A Unix timestamp.'}],
+  fx:function(S){S.pedro.ch[CH].topic=TOPIC;cvNote(S,'pedro',CH,'Topic for '+CH+' is "'+TOPIC+'"');cvNote(S,'pedro',CH,'Topic set by ssin on Wed Oct 28 2026');}},
+ {t:'pedro receives the names',ess:'The names list tells pedro who is already inside. 366 ends it.',
+  see:'pedro\'s nick list shows @ssin and pedro.',start:{kind:'server',text:'the server answers pedro'},
+  rows:[{k:'s',a:'pedro',line:':'+SRV+' 353 pedro = '+CH+' :@ssin pedro'},
+        {k:'s',a:'pedro',line:':'+SRV+' 366 pedro '+CH+' :End of NAMES list'}],
+  fx:function(S){S.pedro.ch[CH].nicks=['@ssin','pedro'];cvNote(S,'pedro',CH,'Nicks '+CH+': [@ssin pedro]');}},
+ {t:'pedro types hello ssin',ess:'pedro types plain text in the channel window. The client sends it as a PRIVMSG to the channel.',
+  see:'pedro\'s window shows his own line immediately: his client prints it itself. The server never echoes a message back to its sender.',start:{kind:'user',text:'pedro types: hello ssin (just text, no slash)'},typed:{pedro:'hello ssin'},
+  rows:[{k:'c',a:'pedro',line:'PRIVMSG '+CH+' :hello ssin'}],
+  fx:function(S){cvLn(S,'pedro',CH,'m','pedro','hello ssin','b');}},
+ {t:'The server forwards the message',ess:'The server adds pedro\'s identity as the prefix and sends the message to every member except pedro.',
+  see:'ssin\'s window shows "pedro │ hello ssin".',start:{kind:'server',text:'the server answers the channel'},
+  rows:[{k:'s',a:'ssin',line:':'+CVB+' PRIVMSG '+CH+' :hello ssin'}],
+  fx:function(S){cvLn(S,'ssin',CH,'m','pedro','hello ssin','b');}},
+ /* ---- second channel: it already has two members, and pedro is not one of them ---- */
+ {t:'ssin types /join '+CH2,ess:'ssin joins a second channel. This one already exists and has two members: schappuy (the operator) and jkubaev. pedro is not in it. Compare with the first channel, which ssin created herself.',
+  see:'ssin\'s input line shows the command.',start:{kind:'user',text:'ssin types: /join '+CH2},typed:{ssin:'/join '+CH2},
+  rows:[{k:'c',a:'ssin',line:'JOIN '+CH2}]},
+ {t:'The server tells the channel, not pedro',ess:'The server sends the JOIN to everybody who is in '+CH2+': ssin, schappuy and jkubaev. pedro is not a member, so he gets nothing: the server only relays a channel\'s lines to its members.',
+  see:'ssin gets a second window, '+CH2+', with "ssin has joined". pedro\'s window does not change at all.',start:{kind:'server',text:'the server answers the members of '+CH2},
+  rows:[{k:'s',a:'ssin',line:':'+CVA+' JOIN '+CH2,note:'The echo to ssin.'},
+        {k:'s',a:'schappuy',line:':'+CVA+' JOIN '+CH2,note:'To schappuy (already inside).'},
+        {k:'s',a:'jkubaev',line:':'+CVA+' JOIN '+CH2,note:'To jkubaev (already inside).'}],
+  fx:function(S){cvJoin(S,'ssin',CH2);cvLn(S,'ssin',CH2,'j','-->','ssin (ssin@127.0.0.1) has joined '+CH2);}},
+ {t:'The server sends the existing topic',ess:'This channel already has a topic, so ssin gets 332 (in '+CH+' she got 331, "no topic") and then 333, who set it.',
+  see:'ssin\'s window title shows the topic of '+CH2+'. Two lines appear. pedro\'s window does not change.',start:{kind:'server',text:'the server answers ssin'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 332 ssin '+CH2+' :'+TOPIC2},
+        {k:'s',a:'ssin',line:':'+SRV+' 333 ssin '+CH2+' '+CVC+' 1792576800'}],
+  fx:function(S){S.ssin.ch[CH2].topic=TOPIC2;cvNote(S,'ssin',CH2,'Topic for '+CH2+' is "'+TOPIC2+'"');cvNote(S,'ssin',CH2,'Topic set by schappuy on Wed Oct 21 2026');}},
+ {t:'The server sends the names of '+CH2,ess:'Now the list has two other people. The server lists them in its own order (the order they joined, with ssin last); the client sorts them for display. Only schappuy has "@".',
+  see:'ssin\'s nick list shows @schappuy, jkubaev and ssin. pedro is not in it, and his window does not change.',start:{kind:'server',text:'the server answers ssin'},
+  rows:[{k:'s',a:'ssin',line:':'+SRV+' 353 ssin = '+CH2+' :@schappuy jkubaev ssin'},
+        {k:'s',a:'ssin',line:':'+SRV+' 366 ssin '+CH2+' :End of NAMES list'}],
+  fx:function(S){S.ssin.ch[CH2].nicks=['@schappuy','jkubaev','ssin'];cvNote(S,'ssin',CH2,'Nicks '+CH2+': [@schappuy jkubaev ssin]');}},
+ {t:'schappuy writes in '+CH2+' (pedro does not see it)',ess:'schappuy types a message. The server forwards it to the other members of '+CH2+' (ssin and jkubaev), not to schappuy herself and not to pedro.',
+  see:'ssin\'s '+CH2+' window shows "schappuy │ hi ssin, welcome!". pedro\'s window does not change.',start:{kind:'user',text:'schappuy types: hi ssin, welcome! (her window is not drawn)'},
+  rows:[{k:'c',a:'schappuy',line:'PRIVMSG '+CH2+' :hi ssin, welcome!'},
+        {k:'s',a:'ssin',line:':'+CVC+' PRIVMSG '+CH2+' :hi ssin, welcome!'},
+        {k:'s',a:'jkubaev',line:':'+CVC+' PRIVMSG '+CH2+' :hi ssin, welcome!',note:'To jkubaev as well.'}],
+  fx:function(S){cvLn(S,'ssin',CH2,'m','schappuy','hi ssin, welcome!','c');}},
+ {t:'ssin types /buffer '+CH,ess:'ssin goes back to the first channel window. This is only her client switching windows: no line is sent to the server.',
+  see:'ssin\'s window shows '+CH+' again.',start:{kind:'user',text:'ssin types: /buffer '+CH},typed:{ssin:'/buffer '+CH},rows:[],
+  fx:function(S){S.ssin.view=CH;}},
+ {t:'pedro types /quit bye',ess:'pedro leaves the server with a goodbye message.',
+  see:'pedro\'s input line shows the command.',start:{kind:'user',text:'pedro types: /quit bye'},typed:{pedro:'/quit bye'},
+  rows:[{k:'c',a:'pedro',line:'QUIT :bye'}]},
+ {t:'The server closes pedro\'s connection and tells the others',ess:'pedro gets a last ERROR line, then the server flushes it and closes the socket. Everyone who shared a channel with pedro hears about it once. ssin shared '+CH+' with him, so she is told. schappuy and jkubaev never shared a channel with pedro, so they hear nothing.',
+  see:'pedro\'s window shows "disconnected". ssin\'s '+CH+' window prints "pedro has quit" and pedro leaves her nick list.',start:{kind:'server',text:'the server answers both'},
+  rows:[{k:'s',a:'pedro',line:'ERROR :Closing Link: 127.0.0.1 (Quit: bye)'},
+        {k:'s',a:'ssin',line:':'+CVB+' QUIT :Quit: bye'}],
+  fx:function(S){S.pedro.connected=false;S.pedro.view='status';cvNote(S,'pedro','status','irc: disconnected from server');var c=S.ssin.ch[CH];c.nicks=c.nicks.filter(function(n){return n!=='pedro';});cvLn(S,'ssin',CH,'l','<--','pedro (pedro@127.0.0.1) has quit (Quit: bye)');}}
+];
+var cvCur=-1,cvTimer=null,cvViewOv={ssin:null,pedro:null};
+function cvState(upto){
+  var S={ssin:cvMk(),pedro:cvMk(),_b:-1,_t:'11:59'};
+  S.pedro.connected=true;S.pedro.status.push({t:'11:59',p:'--',m:'Welcome to the Internet Relay Network '+CVB,c:'n',pc:'',b:-1});
+  for(var b=0;b<=upto&&b<CVBLK.length;b++){S._b=b;S._t='12:'+(30+b);if(CVBLK[b].fx)CVBLK[b].fx(S);}
+  return S;
+}
+function cvWin(S,who,blk){
+  var c=S[who],view=cvViewOv[who]||c.view;
+  if(view!=='status'&&!c.ch[view])view='status';
+  var cur=view==='status'?null:c.ch[view];
+  var lines=cur?cur.lines:c.status;
+  var title=cur?(view+(cur.topic?' │ '+cur.topic:'')):SRV+' (localhost/6667)';
+  var h='<div class="irc"><div class="irc-title">'+esc(title)+'</div><div class="irc-main"><div class="irc-chat" id="cvc-'+who+'">';
+  h+=lines.map(function(l){
+    return '<div class="ml '+l.c+(l.b===cvCur&&cvCur>=0?' new':'')+'"><span class="mt">'+l.t+'</span><span class="mp '+l.pc+'">'+esc(l.p)+'</span><span class="mm">'+esc(l.m)+'</span></div>';
+  }).join('')||'<div class="ml n"><span class="mt"></span><span class="mp"></span><span class="mm">(empty)</span></div>';
+  h+='</div>';
+  if(cur)h+='<div class="irc-nicks">'+cur.nicks.map(function(n){return '<div class="'+(n.charAt(0)==='@'?'op':'')+'">'+esc(n)+'</div>';}).join('')+'</div>';
+  h+='</div><div class="irc-bar"><span>['+who+']</span><button data-w="'+who+'" data-v="status" class="'+(view==='status'?'on':'')+'">1:'+esc(SRV)+'</button>'+c.order.map(function(n,i){return '<button data-w="'+who+'" data-v="'+n+'" class="'+(view===n?'on':'')+'">'+(i+2)+':'+esc(n)+'</button>';}).join('')+(c.connected?'':'<span class="off">not connected</span>')+'</div>';
+  var typed=blk&&blk.typed&&blk.typed[who]?blk.typed[who]:'';
+  h+='<div class="irc-input">'+(typed?'<span class="d">› </span><span class="hl">'+esc(typed)+'</span>':'<span class="d">›</span>')+'</div></div>';
+  return h;
+}
+function cvRows(b){
+  return b.rows.map(function(r){
+    var g=r.g?'<div class="lad-g">'+esc(r.g)+'</div>':'';
+    if(r.k==='sys')return g+'<div class="lad sys"><span class="a">'+esc(r.a)+'</span><span class="arr">●</span><span class="to">server</span><span class="ln">'+esc(r.line)+'</span>'+(r.note?'<span class="lnote">'+esc(r.note)+'</span>':'')+'</div>';
+    var fromc=r.k==='c';
+    return g+'<div class="lad '+(fromc?'fromc':'froms')+'"><span class="a">'+(fromc?esc(r.a):'server')+'</span><span class="arr">→</span><span class="to">'+(fromc?'server':esc(r.a))+'</span><span class="ln">'+colorize(r.line)+'</span>'+(r.note?'<span class="lnote">'+esc(r.note)+'</span>':'')+'</div>';
+  }).join('');
+}
+function cvRender(){
+  var S=cvState(cvCur),blk=cvCur>=0?CVBLK[cvCur]:null;
+  $('cv-ssin').innerHTML=cvWin(S,'ssin',blk);$('cv-pedro').innerHTML=cvWin(S,'pedro',blk);
+  ['ssin','pedro'].forEach(function(w){var e=$('cvc-'+w);if(e)e.scrollTop=1e9;});
+  var h='';
+  CVBLK.forEach(function(b,n){
+    var cls=n<=cvCur?(n===cvCur?'cur':'done'):'fut';
+    var chip=b.start.kind==='user'?'<span class="chip prefix">'+esc(b.start.text)+'</span>':(b.start.kind==='client'?'<span class="chip core">'+esc(b.start.text)+'</span>':'<span class="chip dimc">'+esc(b.start.text)+'</span>');
+    h+='<div class="blk '+cls+'" data-n="'+n+'"><div class="blk-h"><span class="stg-n">Step '+(n+1)+'</span> '+esc(b.t)+'</div>'+cvRows(b)+'</div>';
+  });
+  $('cv-ladder').innerHTML=h;
+  var cur=$('cv-ladder').querySelector('.blk.cur'),box=$('cv-ladder');
+  var top=0;
+  if(cur){var mid=(box.clientHeight-cur.offsetHeight)/2;top=Math.max(0,cur.offsetTop-box.offsetTop-Math.max(48,mid));}
+  var calm=false;try{calm=window.matchMedia('(prefers-reduced-motion: reduce)').matches;}catch(e){}
+  if(cvCur<0||calm||!box.scrollTo)box.scrollTop=top;else box.scrollTo({top:top,behavior:'smooth'});
+  $('cv-count').textContent=cvCur<0?'press Next to start':'step '+(cvCur+1)+' / '+CVBLK.length;
+  $('cv-prev').disabled=cvCur<0;$('cv-reset').disabled=cvCur<0;$('cv-next').disabled=cvCur>=CVBLK.length-1;
+}
+function cvGo(n){cvViewOv={ssin:null,pedro:null};cvCur=Math.max(-1,Math.min(CVBLK.length-1,n));cvRender();}
+function cvStop(){if(cvTimer){clearInterval(cvTimer);cvTimer=null;$('cv-play').textContent='▶ Play';}}
+$('cv-next').addEventListener('click',function(){cvStop();cvGo(cvCur+1);});
+$('cv-prev').addEventListener('click',function(){cvStop();cvGo(cvCur-1);});
+$('cv-reset').addEventListener('click',function(){cvStop();cvGo(-1);});
+$('cv-play').addEventListener('click',function(){
+  if(cvTimer){cvStop();return;}
+  if(cvCur>=CVBLK.length-1)cvGo(-1);
+  $('cv-play').textContent='⏸ Pause';
+  cvTimer=setInterval(function(){if(cvCur>=CVBLK.length-1){cvStop();return;}cvGo(cvCur+1);},2400);
+});
+$('cv-ladder').addEventListener('click',function(e){var r=e.target.closest('.blk');if(!r)return;cvStop();cvGo(+r.getAttribute('data-n'));});
+['cv-ssin','cv-pedro'].forEach(function(id){$(id).addEventListener('click',function(e){var b=e.target.closest('button');if(!b)return;cvViewOv[b.getAttribute('data-w')]=b.getAttribute('data-v');var S=cvState(cvCur),bl=cvCur>=0?CVBLK[cvCur]:null;$('cv-ssin').innerHTML=cvWin(S,'ssin',bl);$('cv-pedro').innerHTML=cvWin(S,'pedro',bl);});});
+cvGo(-1);
+
+
+/* ====== short doc: 1. the message ====== */
+var ANAT=':ssin!ssin@127.0.0.1 PRIVMSG #sk8 :Hey! First time here!';
+var MSGX=[
+ {l:'PASS secret',wc:'',after:'sent when it connects'},
+ {l:'NICK ssin',wc:'/nick ssin',after:'also sent when it connects'},
+ {l:'JOIN #sk8',wc:'/join #sk8'},
+ {l:'PRIVMSG #sk8 :Hey! First time here!',wc:'/msg #sk8 Hey! First time here!'},
+ {l:'PRIVMSG pedro :oie',wc:'/msg pedro oie'},
+ {l:':ssin!ssin@127.0.0.1 PRIVMSG #sk8 :Hey! First time here!',wc:'',shows:'ssin │ Hey! First time here!',after:'the server sends this message to all the users in the room'}
+];
+function wcRow(x){
+  if(x.shows)return '<span class="wl">WeeChat:</span><code>'+esc(x.shows)+'</code>'+(x.after?'<span class="wn">'+esc(x.after)+'</span>':'');
+  return '<span class="wl">WeeChat:</span>'+(x.wc?'<code>'+esc(x.wc)+'</code>':'<span>nothing to type</span>')+(x.after?'<span class="wn">'+esc(x.after)+'</span>':'');
+}
+function tokStrip(line,cls){
+  var pn=0;
+  return '<div class="toks '+(cls||'')+'">'+pieces(line).filter(function(p){return p.r!=='sep';}).map(function(p){
+    var lab=p.r==='prefix'?'prefix':p.r==='command'?'command':p.r==='param'?'param '+(++pn):'trailing (param '+(++pn)+')';
+    return '<span class="tok '+p.r+'"><code>'+esc(p.t)+'</code><small>'+lab+'</small></span>';
+  }).join('')+'</div>';
+}
+$('msg-anat').innerHTML=tokStrip(ANAT);
+function tokStripN(line,names){
+  var pn=0;
+  return '<div class="toks">'+pieces(line).filter(function(p){return p.r!=='sep';}).map(function(p){
+    var lab;
+    if(p.r==='prefix')lab='prefix';
+    else if(p.r==='command')lab='command';
+    else{var nm=names&&names[pn];pn++;lab=(nm||'param '+pn)+(p.r==='trailing'?' · trailing':'');}
+    return '<span class="tok '+p.r+'"><code>'+esc(p.t)+'</code><small>'+esc(lab)+'</small></span>';
+  }).join('')+'</div>';
+}
+function msgRender(){
+  var line=$('msg-in').value,h='';
+  if(!line.replace(/ /g,'')){
+    $('msg-out').innerHTML='<p class="hint">An empty line is ignored by the server.</p>';return;
+  }
+  h+=tokStrip(line);
+  var m=parseIRC(line),ps=m.params.slice(0,15),q=function(s){return JSON.stringify(s);};
+  h+='<pre class="msg-struct">Message {\n  prefix:  '+esc(m.prefix===null?'""':q(m.prefix))+'\n  command: '+esc(q(m.command.toUpperCase()))+'\n  params:  ['+esc(ps.map(function(p){return q(p.t);}).join(', '))+']\n}</pre>';
+  var n=nbytes(line)+2;
+  h+='<span class="chip '+(n>512?'bad':'rfc')+'">'+n+' of 512 bytes with \\r\\n'+(n>512?' · too long':'')+'</span>';
+  if(m.params.length>15)h+=' <span class="chip bad">only the first 15 parameters are kept</span>';
+  $('msg-out').innerHTML=h;
+}
+function msgPick(i){
+  var x=MSGX[i];$('msg-in').value=x.l;$('msg-wc').innerHTML=wcRow(x);
+  [].forEach.call($('msg-ex').children,function(b,j){b.setAttribute('aria-pressed',j===i?'true':'false');});
+  msgRender();
+}
+$('msg-ex').innerHTML=MSGX.map(function(x,i){return '<button class="ex-btn" data-i="'+i+'" aria-pressed="false">'+esc(x.l)+'</button>';}).join('');
+$('msg-ex').addEventListener('click',function(e){var b=e.target.closest('button');if(b)msgPick(+b.getAttribute('data-i'));});
+$('msg-in').addEventListener('input',function(){$('msg-wc').innerHTML='';[].forEach.call($('msg-ex').children,function(b){b.setAttribute('aria-pressed','false');});msgRender();});
+msgPick(3);
+
+/* ====== short doc: 2. commands: WeeChat -> message -> answer ====== */
+var P=':schappuy!schappuy@127.0.0.1', O=':ssin!ssin@127.0.0.1', SV=':oiPoulette';
+function X(ctx,wc,line,names,reps,note){return {ctx:ctx,wc:wc,line:line,names:names,reps:reps||[],note:note};}
+function R(to,line,names){return {to:to,line:line,names:names};}
+var SC=[
+ {g:'Getting connected',sub:'Before anything else works, the server needs to know who you are.',cmds:[
+  {n:'PASS',syn:'PASS <password>',desc:'The connection password, the one given to ./ircserv. It must arrive before NICK and USER.',
+   ex:[X('sent when it connects','','PASS secret',['password'],[])]},
+  {n:'NICK',syn:'NICK <nickname>',desc:'Chooses the nickname, or changes it later.',
+   ex:[X('','/nick schappuy_','NICK schappuy_',['new nickname'],[R('everyone who shares a channel with schappuy, schappuy included',P+' NICK :schappuy_',['new nickname'])],'The old identity is the prefix. WeeChat also sends the first NICK by itself, from its settings.')]},
+  {n:'USER',syn:'USER <username> <mode> <unused> :<realname>',desc:'Gives the username and the real name. With NICK (and PASS) it completes the registration, and the server answers with the welcome.',
+   ex:[X('sent when it connects','','USER schappuy 0 * :Schappuy',['username','mode','unused','realname'],[R('schappuy',SV+' 001 schappuy :Welcome to the Internet Relay Network schappuy!schappuy@127.0.0.1',['you','text'])],'WeeChat sends it by itself, from its username and realname settings.')]},
+  {n:'PING',syn:'PING <token>',desc:'Keep-alive. The answer is PONG with the same token.',
+   ex:[X('raw message, you almost never need it','/quote PING :hello','PING :hello',['token'],[R('schappuy',SV+' PONG oiPoulette :hello',['server','token'])],'WeeChat answers the server\'s own PING by itself, so you almost never see it.')]},
+  {n:'QUIT',syn:'QUIT [:<message>]',desc:'Ends the session. The server tells the channels and closes the connection.',
+   ex:[X('','/quit bye','QUIT :bye',['message'],[R('everyone who shares a channel with schappuy',P+' QUIT :Quit: bye',['message'])])]}
+ ]},
+ {g:'Channels and messages',sub:'Join a room and write in it.',cmds:[
+  {n:'JOIN',syn:'JOIN <channel>',desc:'Enters a channel. It is created if it does not exist, and its first member becomes operator.',
+   ex:[X('','/join #sk8','JOIN #sk8',['channel'],[R('all members of #sk8, schappuy included',P+' JOIN #sk8',['channel']),R('schappuy',SV+' 353 schappuy = #sk8 :@ssin jkubaev pedro schappuy',['you','"=" public','channel','members, @ = operator']),R('schappuy',SV+' 366 schappuy #sk8 :End of NAMES list',['you','channel','text'])])]},
+  {n:'PART',syn:'PART <channel> [:<message>]',desc:'Leaves a channel.',
+   ex:[X('','/part #sk8 see you','PART #sk8 :see you',['channel','message'],[R('all members of #sk8, schappuy included',P+' PART #sk8 :see you',['channel','message'])])]},
+  {n:'PRIVMSG',syn:'PRIVMSG <target> :<text>',desc:'Sends text to a channel (everyone in it) or to one person. The text is the trailing parameter.',
+   ex:[X('to a channel','/msg #sk8 Hey! First time here!','PRIVMSG #sk8 :Hey! First time here!',['target','text'],[R('every member of #sk8 except schappuy',P+' PRIVMSG #sk8 :Hey! First time here!',['channel','text'])],'The sender gets nothing back: WeeChat prints your own text by itself.'),
+       X('to one person','/msg ssin oie','PRIVMSG ssin :oie',['target','text'],[R('ssin only',P+' PRIVMSG ssin :oie',['recipient','text'])])]}
+ ]},
+ {g:'Channel operators',sub:'An operator is marked with @ in the nick list. Here ssin is the operator of #sk8.',cmds:[
+  {n:'TOPIC',syn:'TOPIC <channel> [:<topic>]',desc:'Reads or sets the topic of the channel. Without text it is a question.',
+   ex:[X('set the topic','/topic Read the topic, be nice','TOPIC #sk8 :Read the topic, be nice',['channel','new topic'],[R('all members of #sk8',O+' TOPIC #sk8 :Read the topic, be nice',['channel','topic'])],'WeeChat adds the channel of the window you are in.'),
+       X('read the topic','/topic','TOPIC #sk8',['channel'],[R('ssin',SV+' 332 ssin #sk8 :Read the topic, be nice',['you','channel','topic'])])]},
+  {n:'INVITE',syn:'INVITE <nickname> <channel>',desc:'Invites someone to a channel. It lets them in even if the channel is invite-only (+i).',
+   ex:[X('','/invite lbueno-m','INVITE lbueno-m #sk8',['nickname','channel'],[R('ssin',SV+' 341 ssin lbueno-m #sk8',['you','nick','channel']),R('lbueno-m',O+' INVITE lbueno-m #sk8',['nick','channel'])])]},
+  {n:'KICK',syn:'KICK <channel> <user> [:<reason>]',desc:'Removes someone from a channel. Operators only.',
+   ex:[X('','/kick jkubaev spamming','KICK #sk8 jkubaev :spamming',['channel','user','reason'],[R('all members of #sk8, jkubaev included',O+' KICK #sk8 jkubaev :spamming',['channel','user','reason'])])]},
+  {n:'MODE',syn:'MODE <channel> <modestring> [<arguments>]',desc:'Changes the channel settings: +i invite-only, +t only operators set the topic, +k key (password), +o gives operator, +l user limit.',
+   ex:[X('give operator','/mode #sk8 +o pedro','MODE #sk8 +o pedro',['channel','modestring','argument'],[R('all members of #sk8',O+' MODE #sk8 +o pedro',['channel','change','argument'])],'WeeChat also has /op pedro for this.'),
+       X('invite-only and topic lock','/mode #sk8 +it','MODE #sk8 +it',['channel','modestring'],[R('all members of #sk8',O+' MODE #sk8 +it',['channel','changes'])])]}
+ ]}
+];
+function exBlock(x){
+  var h='<div class="step"><div class="wrow"><span class="wl">WeeChat:</span>'+(x.wc?'<code>'+esc(x.wc)+'</code>':'<span>nothing to type</span>')+(x.ctx?'<span class="wn">'+esc(x.ctx)+'</span>':'')+'</div></div>';
+  h+='<div class="step"><div class="lbl">Message</div>'+tokStripN(x.line,x.names)+'</div>';
+  if(!x.reps.length)h+='<div class="step"><div class="lbl">Server answers: nothing</div></div>';
+  var prev=null;
+  x.reps.forEach(function(r){
+    if(r.to!==prev){if(prev!==null)h+='</div>';h+='<div class="step"><div class="lbl">Server answers, to '+esc(r.to)+'</div>';prev=r.to;}
+    h+='<div class="scroll noln">'+strip(r.line,null)+'</div>';
+  });
+  if(prev!==null)h+='</div>';
+  return h;
+}
+function cmdCardS(c){
+  var h='<article class="cmdcard"><h3><span class="nm">'+esc(c.n)+'</span></h3><p>'+esc(c.desc)+'</p>';
+  h+=c.ex.map(exBlock).join('<hr class="sep">');
+  return h+'</article>';
+}
+$('cmd-groups').innerHTML=SC.map(function(g){
+  return '<h3 class="cmdgroup">'+esc(g.g)+'</h3><p>'+esc(g.sub)+'</p>'+g.cmds.map(cmdCardS).join('');
+}).join('');
+
+if($('nr-ex')){
+/* ====== numeric replies ====== */
+var NUMS=[
+ {g:'Registration',rows:[
+  ['001','RPL_WELCOME','You are registered. The first line a client waits for.','needed'],
+  ['002','RPL_YOURHOST','The server name and version.','expected'],
+  ['003','RPL_CREATED','When the server was created.','expected'],
+  ['004','RPL_MYINFO','Server name, version and the mode letters it knows.','expected'],
+  ['005','RPL_ISUPPORT','The server\'s features and limits. Not in RFC 2812.','optional'],
+  ['422','ERR_NOMOTD','There is no message of the day.','expected']]},
+ {g:'Channels',rows:[
+  ['331','RPL_NOTOPIC','The channel has no topic.','expected'],
+  ['332','RPL_TOPIC','The topic of the channel.','expected'],
+  ['333','RPL_TOPICWHOTIME','Who set the topic, and when. Not in RFC 2812.','optional'],
+  ['353','RPL_NAMREPLY','The members of a channel (can be several lines).','needed'],
+  ['366','RPL_ENDOFNAMES','End of the member list.','needed'],
+  ['341','RPL_INVITING','The INVITE was sent.','expected']]},
+ {g:'Errors',rows:[
+  ['401','ERR_NOSUCHNICK','No user with that nick.','needed'],
+  ['403','ERR_NOSUCHCHANNEL','No channel with that name.','needed'],
+  ['433','ERR_NICKNAMEINUSE','The nickname is already taken.','needed'],
+  ['461','ERR_NEEDMOREPARAMS','The command has too few parameters.','needed'],
+  ['462','ERR_ALREADYREGISTRED','Already registered (PASS or USER sent again).','needed'],
+  ['464','ERR_PASSWDMISMATCH','Wrong password.','needed'],
+  ['482','ERR_CHANOPRIVSNEEDED','You are not a channel operator.','needed']]}
+];
+function numName(n){for(var i=0;i<NUMS.length;i++)for(var j=0;j<NUMS[i].rows.length;j++)if(NUMS[i].rows[j][0]===n)return NUMS[i].rows[j][1];return '';}
+var NRX=[
+ {l:':oiPoulette 001 ssin :Welcome to the Internet Relay Network ssin!ssin@127.0.0.1',n:['target nick','text'],
+  why:'Sent once, when PASS, NICK and USER are all in. It tells the client "you are registered". The end of the text is the identity the server gave it: nick!user@host.'},
+ {l:':oiPoulette 331 ssin #sk8 :No topic is set',n:['target nick','channel','text'],
+  why:'The answer when someone joins a channel, or asks for its topic, and the channel has none.'},
+ {l:':oiPoulette 332 ssin #sk8 :Read the topic, be nice',n:['target nick','channel','topic'],
+  why:'The same, but the channel has a topic. The client shows it in the channel window.'},
+ {l:':oiPoulette 353 ssin = #sk8 :@ssin @schappuy jkubaev pedro',n:['target nick','public channel','channel','members'],
+  why:'Sent after a JOIN: who is in the channel. "=" means a public channel and "@" marks an operator. The client fills its nick list from it. A long list is split over several 353 lines.'},
+ {l:':oiPoulette 366 ssin #sk8 :End of NAMES list',n:['target nick','channel','text'],
+  why:'Always the last line of the member list, so the client knows the list is complete.'},
+ {l:':oiPoulette 461 ssin JOIN :Not enough parameters',n:['target nick','command that failed','text'],
+  why:'An error. The client sent JOIN with nothing after it, so the server does not know which channel. The parameter after the nick tells which command failed.'},
+ {l:':oiPoulette 403 ssin #nochannel :No such channel',n:['target nick','channel','text'],
+  why:'An error. The client wrote to, or asked about, a channel that does not exist.'},
+ {l:':oiPoulette 433 * ssin :Nickname is already in use',n:['no nick yet','nick that was tried','text'],
+  why:'An error. Someone already uses the nick the client asked for. The "*" is there because the client has no nick yet. It can try another NICK.'},
+ {l:':oiPoulette 464 * :Password incorrect',n:['no nick yet','text'],
+  why:'An error. The connection password was wrong. Real servers then close the connection.'}
+];
+function tokStripR(line,names){
+  var pn=0;
+  return '<div class="toks">'+pieces(line).filter(function(p){return p.r!=='sep';}).map(function(p){
+    var lab;
+    if(p.r==='prefix')lab='server';
+    else if(p.r==='command')lab='number';
+    else{var nm=names&&names[pn];pn++;lab=(nm||'param '+pn)+(p.r==='trailing'?' · trailing':'');}
+    return '<span class="tok '+p.r+'"><code>'+esc(p.t)+'</code><small>'+esc(lab)+'</small></span>';
+  }).join('')+'</div>';
+}
+function nrPick(i){
+  var x=NRX[i],m=parseIRC(x.l);
+  [].forEach.call($('nr-ex').children,function(b,j){b.setAttribute('aria-pressed',j===i?'true':'false');});
+  $('nr-out').innerHTML=tokStripR(x.l,x.n)+'<span class="chip rfc">'+esc(m.command)+' · '+esc(numName(m.command))+'</span><p class="nr-why">'+esc(x.why)+'</p>';
+}
+$('nr-ex').innerHTML=NRX.map(function(x,i){var m=parseIRC(x.l);return '<button class="ex-btn" data-i="'+i+'" aria-pressed="false">'+esc(m.command+' '+numName(m.command))+'</button>';}).join('');
+$('nr-ex').addEventListener('click',function(e){var b=e.target.closest('button');if(b)nrPick(+b.getAttribute('data-i'));});
+nrPick(1);
+$('nr-tables').innerHTML=NUMS.map(function(g){
+  return '<div class="tblwrap"><table><colgroup><col style="width:64px"><col style="width:210px"><col><col style="width:96px"></colgroup><thead><tr><th colspan="4">'+esc(g.g)+'</th></tr></thead><tbody>'+g.rows.map(function(r){
+    var c=r[3]==='needed'?'core':r[3]==='expected'?'rfc':'opt';
+    return '<tr><td class="t"><code>'+r[0]+'</code></td><td>'+esc(r[1])+'</td><td>'+esc(r[2])+'</td><td><span class="chip '+c+'">'+r[3]+'</span></td></tr>';
+  }).join('')+'</tbody></table></div>';
+}).join('');
+
+}
+})();
+</script>
 </body>
 </html>
