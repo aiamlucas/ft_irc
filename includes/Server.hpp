@@ -3,18 +3,11 @@
 
 #include "Client.hpp"
 
-#include <iostream>
-#include <sys/types.h>		// socket()
-#include <sys/socket.h>		// socket()
-#include <sys/un.h>			// strerror()
-#include <arpa/inet.h>		// htons()
-#include <cerrno>			// errno()
-#include <stdlib.h>			// strtol
-#include <unistd.h>			// close
-#include <poll.h>			// poll
-#include <fcntl.h>			// fcntl
 #include <vector>
 #include <map>
+#include <poll.h>			// pollfd
+#include <string>			// std::string_password
+#include <netinet/in.h>  	// sockaddr_in
 
 #define SYSCALL_ERROR -1
 #define SERVER_RUNNING true

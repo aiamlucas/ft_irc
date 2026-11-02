@@ -1,6 +1,16 @@
 #include "Server.hpp"
 #include "../../includes/colors.hpp"
 
+#include <iostream>
+#include <sys/types.h>		// socket()
+#include <sys/socket.h>		// socket()
+#include <sys/un.h>			// strerror()
+#include <arpa/inet.h>		// htons()
+#include <cerrno>			// errno()
+#include <stdlib.h>			// strtol
+#include <unistd.h>			// close
+#include <fcntl.h>			// fcntl
+
 #define MAX_BUFFER_SIZE 512
 #define TEST_MAX_BUFF_SIZ 20
 
@@ -131,8 +141,8 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 	// TBC Can 2 cmds be in the same buffer ?
 
 	ssize_t bytesReceived = 0;
-	char buffer[8] = {0};	// \n is automatically added in the buffer even if no line break happens (nc cmd)
-	bytesReceived = recv(ClientSocket, &buffer, 8, 0);	// FYI : Flag MSG_DONTWAIT enables nonblocking operation but used fcntl() instead
+	char buffer[MAX_BUFFER_SIZE] = {0};	// \n is automatically added in the buffer even if no line break happens (nc cmd)
+	bytesReceived = recv(ClientSocket, &buffer, MAX_BUFFER_SIZE, 0);	// FYI : Flag MSG_DONTWAIT enables nonblocking operation but used fcntl() instead
 
 	// If client sends something else, it doesn't print because server is waiting for a new connection - Fix that
 	if (bytesReceived == -1)
@@ -163,7 +173,7 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 		checkString(clientBuffer);
 	}
 
-	cout	<< "Buffer content : [" << buffer
+	cout	<< "Buffer content : [" << string(buffer, bytesReceived)
 			<< "] - Client inBuffer : [" << clientBuffer
 			<< "] From FD " << ClientSocket
 			<< " (" << bytesReceived << " bytes received)\n"
@@ -172,6 +182,12 @@ std::vector<pollfd>::iterator	Server::receive_n_sendToParsing(int	ClientSocket, 
 	return currentPos;
 }
 
+/*
+NB / TODO : One read can contain several lines,
+or just a line
+or half of the next line (similar logic to the ft_getnextline)
+Skip empty lines
+*/
 void	Server::checkString(string &clientBuffer)
 {
 	if (clientBuffer.size() > 510)
@@ -180,8 +196,13 @@ void	Server::checkString(string &clientBuffer)
 		clientBuffer.erase();
 		return;
 	}
-	clientBuffer.erase(clientBuffer.end() - 1);
-	cerr << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;
+
+	if (*(clientBuffer.end() - 2) == '\r')			// Dealing with the \r\n case
+		clientBuffer.erase(clientBuffer.find('\r'));
+	else
+		clientBuffer.erase(clientBuffer.end() - 1);
+
+	cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;
 }
 
 // _listeningSocket is at position [0] or (_pollfdParty.begin())

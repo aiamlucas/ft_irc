@@ -1,5 +1,7 @@
-#include "../includes/Utils.hpp"
-#include "../includes/Server.hpp"
+#include "Utils.hpp"
+#include "Server.hpp"
+
+#include <stdlib.h>	// EXIT_FAILURE & EXIT_SUCCESS
 
 using std::cerr;
 using std::endl;
