@@ -1,7 +1,10 @@
-#include "../includes/Utils.hpp"
-#include "../includes/Server.hpp"
+#include "Utils.hpp"
+#include "Server.hpp"
 
-// From Windows : \\wsl$\Ubuntu\home\prunelle\00_Root\11_IRC\docs
+#include <stdlib.h>	// EXIT_FAILURE & EXIT_SUCCESS
+
+using std::cerr;
+using std::endl;
 
 int	main(int argc, char *argv[])
 {
