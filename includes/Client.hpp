@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   Client.hpp                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: lbueno-m <lbueno-m@student.42berlin.de>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/10/09 15:36:10 by lbueno-m          #+#    #+#             */
-/*   Updated: 2026/10/12 15:43:51 by lbueno-m         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
@@ -24,6 +12,8 @@ private:
     std::string _outBuffer;
     // Protocol + Domain
     std::string _nickName;
+    std::string _userName;
+    std::string _hostName;
 
     // what else?
 
