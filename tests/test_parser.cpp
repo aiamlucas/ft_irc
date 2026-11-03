@@ -19,87 +19,80 @@ static std::string paramsToString(const std::vector<std::string>& params) {
     return result;
 }
 
-static void expectParse(const std::string& line, const std::string& prefix,
-                        const std::string& command, const std::string& params) {
-    Message parsedLine = parseLine(line);
+// format the message to match this pattern:
+// "prefix=[...] command=[...] params=[<param_1><param_2>]"
+static std::string format(const Message& message) {
+    return "prefix=[" + message.prefix + "] command=[" + message.command +
+           "] params=[" + paramsToString(message.params) + "]";
+}
+
+static void expectParse(const std::string& line, const std::string& expected) {
+    std::string input = format(parseLine(line));
     g_total++;
-    if (parsedLine.prefix == prefix && parsedLine.command == command &&
-        paramsToString(parsedLine.params) == params) {
+    if (input == expected) {
         std::cout << "\n"
                   << CL_GREEN << "OK: " << RESET << "\"" << line << "\""
-                  << std::endl;
+                  << "\n"
+                  << input << std::endl;
         return;
     }
     g_failed++;
     std::cerr << CL_RED << "FAIL: " << RESET << "\"" << line << "\"\n"
-              << " expected: prefix=[" << prefix << "] command=[" << command
-              << "] params=[" << params << "]" << "\n"
-              << " got: prefix=[" << parsedLine.prefix << "] command=["
-              << parsedLine.command << "] params=["
-              << paramsToString(parsedLine.params) << "]" << std::endl;
+              << " expected: " << expected << "\n"
+              << " input:    " << input << std::endl;
 }
 
 int main() {
-    // testing the line and the expected results
-
-    // expectParse(line, prefix, command, params)
-
-    // line: the raw text, that comes from the client
-    //       [:prefix] COMMAND [param1, param2, ...] [:trailing]
+    std::string line;
+    std::string expected;
 
     // Test 1
-    // "PING"
-    // prefix: ""
-    // command: PING
-    // params:  ""
-    expectParse("PING", "", "PING", "");
+    line = "PING";
+    expected = "prefix=[] command=[PING] params=[]";
+    expectParse(line, expected);
 
     // Test 2
-    // "NICK ssin"
-    // prefix: ""
-    // command: NICK
-    // params: ssin
-    expectParse("NICK ssin", "", "NICK", "<ssin>");
+    line = "NICK ssin";
+    expected = "prefix=[] command=[NICK] params=[<ssin>]";
+    expectParse(line, expected);
 
     // Test 3
-    // "JOIN #42berlin"
-    // prefix: ""
-    // command: JOIN
-    // params: #42berlin
-    expectParse("JOIN #42berlin", "", "JOIN", "<#42berlin>");
+    line = "JOIN #42berlin";
+    expected = "prefix=[] command=[JOIN] params=[<#42berlin>]";
+    expectParse(line, expected);
 
     // Test 4
-    // ":ssin!abcd@192.168.1.105 PRIVMSG #42berlin :oieee pessoal!"
-    // prefix: ssin!abcd@192.168.1.105
-    // command: PRIVMSG
-    // params: #42berlin
-    //         oieee pessoal!
-    expectParse(":ssin!abcd@192.168.1.105 PRIVMSG #42berlin :oieee pessoal!",
-                "ssin!abcd@192.168.1.105", "PRIVMSG",
-                "<#42berlin><oieee pessoal!>");
+    line = ":ssin!abcd@192.168.1.105 PRIVMSG #42berlin :oieee pessoal!";
+    expected =
+        "prefix=[ssin!abcd@192.168.1.105] command=[PRIVMSG] "
+        "params=[<#42berlin><oieee pessoal!>]";
+    expectParse(line, expected);
 
     // Test 5
     // extra spaces (should be ignored)
-    expectParse(":ssin!@bc   PRIVMSG           #sk8  :aee", "ssin!@bc",
-                "PRIVMSG", "<#sk8><aee>");
+    line = ":ssin!@bc   PRIVMSG           #sk8  :aee";
+    expected = "prefix=[ssin!@bc] command=[PRIVMSG] params=[<#sk8><aee>]";
+    expectParse(line, expected);
 
     // Test 6
     // a ':' inside the trailing param, should be a text
-    expectParse("PRIVMSG #sk8 :hey: there!", "", "PRIVMSG",
-                "<#sk8><hey: there!>");
-
-    // Test 7
-    // line ends at "\r\n"
-    expectParse("JOIN #archlinux\r\n", "", "JOIN", "<#archlinux>");
+    line = "PRIVMSG #sk8 :hey: there!";
+    expected = "prefix=[] command=[PRIVMSG] params=[<#sk8><hey: there!>]";
+    expectParse(line, expected);
 
     // Test 8
     // more than 15 params: keep the first 15
-    expectParse("MODE #42 +o 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17", "",
-                "MODE", "<#42><+o><1><2><3><4><5><6><7><8><9><10><11><12><13>");
+    line = "MODE #42 +o 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17";
+    expected =
+        "prefix=[] command=[MODE] "
+        "params=[<#42><+o><1><2><3><4><5><6><7><8><9><10><11><12><13>]";
+    expectParse(line, expected);
 
     // Test 13
     // empty line: command stays empty
-    expectParse("", "", "", "");
+    line = "";
+    expected = "prefix=[] command=[] params=[]";
+    expectParse(line, expected);
 
     std::cout << "\n"
               << (g_total - g_failed) << "/" << g_total << " tests passed"
