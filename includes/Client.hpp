@@ -8,9 +8,9 @@ private:
     int _fd;
     std::string _inBuffer;
     std::string _outBuffer;
-    std::string _nickName;
-    std::string _userName;
-    std::string _hostName;  // client IP -> used in prefix
+    std::string _nickname;
+    std::string _username;
+    std::string _hostname;  // client IP -> used in prefix
 
     bool _passwordOk;
     bool _welcomeOk;  // welcome messages sent: 001, 002, 003, 004, 422(MOTD)
@@ -21,15 +21,15 @@ public:
     int getFd() const;
 
     void setNickname(const std::string& nick);
-    void setUserName(const std::string& username);
-    void setHostName(const std::string& hostname);
+    void setUsername(const std::string& username);
+    void setHostname(const std::string& hostname);
     void setPasswordOk();
     void setWelcomeOk();
 
     std::string& getInBuffer();
     std::string getNickname() const;
-    std::string getUserName() const;
-    std::string getHostName() const;
+    std::string getUsername() const;
+    std::string getHostname() const;
     bool isPasswordOk() const;
     bool isWelcomeOk() const;
     bool isRegistered() const;   // password + username + nickname

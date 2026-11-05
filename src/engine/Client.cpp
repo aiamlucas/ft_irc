@@ -6,25 +6,25 @@ Client::~Client() {}
 
 int Client::getFd() const { return _fd; }
 
-void Client::setNickname(const std::string& nickname) { _nickName = nickname; }
-void Client::setUserName(const std::string& username) { _userName = username; }
-void Client::setHostName(const std::string& hostname) { _hostName = hostname; }
+void Client::setNickname(const std::string& nickname) { _nickname = nickname; }
+void Client::setUsername(const std::string& username) { _username = username; }
+void Client::setHostname(const std::string& hostname) { _hostname = hostname; }
 void Client::setPasswordOk() { _passwordOk = true; }
 void Client::setWelcomeOk() { _welcomeOk = true; }
 
 std::string& Client::getInBuffer() { return _inBuffer; }
-std::string Client::getNickname() const { return _nickName; }
-std::string Client::getUserName() const { return _userName; }
-std::string Client::getHostName() const { return _hostName; }
+std::string Client::getNickname() const { return _nickname; }
+std::string Client::getUsername() const { return _username; }
+std::string Client::getHostname() const { return _hostname; }
 
 bool Client::isPasswordOk() const { return _passwordOk; }
 bool Client::isWelcomeOk() const { return _welcomeOk; }
 // a client is registered when it has entered the right password
 // and has a nickname and username
 bool Client::isRegistered() const {
-    return _passwordOk && !_nickName.empty() && !_userName.empty();
+    return _passwordOk && !_nickname.empty() && !_username.empty();
 }
 
 std::string Client::prefix() const {
-    return _nickName + "!" + _userName + "@" + _hostName;
+    return _nickname + "!" + _username + "@" + _hostname;
 }
