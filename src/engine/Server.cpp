@@ -11,11 +11,13 @@
 #include <cerrno>  // errno()
 #include <iostream>
 
-#include "includes/colors.hpp"
+#include "colors.hpp"
 
-// Next : refactor other files than Server.cpp
-// + function to remove clients from everything
-// + buffer with what's following \r\n
+/*
+Next : function to remove clients from everything
++ buffer with what's following \r\n - No clue where to put it because
+the buffer is common to all clients. Add a temp buffer in client ?
+*/
 
 #define MAX_BUFFER_SIZE 512
 using std::cerr;
@@ -120,14 +122,14 @@ void Server::pollAndAccept() {
 }
 
 void Server::acceptNewClient() {
-    // Comment out the 2 lines below if client address needed
-    // sockaddr_in newClientAddr = {0};
-    // socklen_t addrlen = sizeof(newClientAddr);
-    int ClientSocket = accept(_pollfdParty[0].fd, NULL, NULL);
-    // if client address needed, replace line above by line below
-    // int	ClientSocket = accept(_pollfdParty[0].fd, (struct sockaddr*)
-    // &newClientAddr, &addrlen);	// args : int sockfd, struct sockaddr
-    // *addr, socklen_t *addrlen)
+    sockaddr_in newClientAddr;
+    memset(&newClientAddr, 0, sizeof(sockaddr_in));
+    socklen_t addrlen = sizeof(newClientAddr);
+    int ClientSocket =
+        accept(_pollfdParty[0].fd, (struct sockaddr*)&newClientAddr, &addrlen);
+    cout << CL_LIGHT_BLUE << "Client port is : " << newClientAddr.sin_port
+         << "\nClient IP is : " << newClientAddr.sin_addr.s_addr << RESET
+         << endl;
     // Only args allowed by subject
     if (fcntl(ClientSocket, F_SETFL, O_NONBLOCK) == -1)
         cerr << CL_RED << "Issue w/ fcntl() : " << strerror(errno)
@@ -140,9 +142,12 @@ void Server::acceptNewClient() {
         // Add last ClientSocket in _pollfdParty + _clientsParty :
         setUpNewSocket(ClientSocket);
         Client NewClient(ClientSocket);
+        // Add Client IP here
         _clientsParty.insert(std::pair<int, Client>(ClientSocket, NewClient));
     }
 }
+//     addClientIP();
+void Server::addClientIP() {}
 
 void Server::parsePollfds_n_receive() {
     for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
@@ -192,15 +197,15 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
         return (_pollfdParty.erase(currentPos));
     }
 
-    std::map<int, Client>::iterator SearchClientBuffer =
+    std::map<int, Client>::iterator SearchclientInBuffer =
         _clientsParty.find(ClientSocket);
     // TO DO : edge case if find returns end (very low prob but good practice)
-    string& clientBuffer = (*SearchClientBuffer).second.getInBuffer();
+    string& clientInBuffer = (*SearchclientInBuffer).second.getInBuffer();
 
-    clientBuffer.append(buffer, bytesReceived);
+    clientInBuffer.append(buffer, bytesReceived);
 
-    if (clientBuffer.find('\n' /*, sizeof(clientBuffer)*/) ==
-        clientBuffer.npos) {
+    if (clientInBuffer.find('\n' /*, sizeof(clientInBuffer)*/) ==
+        clientInBuffer.npos) {
         cout << CL_PURPLE_DIM
              << "Command cropped (additional bytes incoming ...)\n"
              << RESET;
@@ -208,14 +213,14 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
         // Check if chars after line return and store them in buffer ?
         cout << CL_BLUE_DIM
              << "Line return found - String might good to be handled by "
-                "parsing - Check IP ...\n"
+                "parsing - Checking ...\n"
              << RESET;
-        checkString(clientBuffer);
+        checkString(clientInBuffer);
     }
 
     cout << "Buffer content : -->" << string(buffer, bytesReceived) << "<-- ("
          << bytesReceived << " bytes received)"
-         << " - Client inBuffer : [" << clientBuffer << "] From FD "
+         << " - Client inBuffer : [" << clientInBuffer << "] From FD "
          << ClientSocket << "\n --------------\n";
 
     return currentPos;
@@ -227,25 +232,26 @@ or just a line
 or half of the next line (similar logic to the ft_getnextline)
 Skip empty lines
 */
-void Server::checkString(string& clientBuffer) {
-    if (clientBuffer.size() > 510) {
+void Server::checkString(string& clientInBuffer) {
+    if (clientInBuffer.size() > 510) {
         cerr << CL_RED_BOLD
              << "\t... Buffer is too long - Max 510 chars allowed\n\n"
              << RESET;
-        clientBuffer.erase();
+        clientInBuffer.erase();
         return;
     }
 
     // save iterator/position for \n and for \r
-    size_t CR = clientBuffer.find_first_of('\r');
-    size_t LF = clientBuffer.find_first_of('\n');
+    size_t CR = clientInBuffer.find_first_of('\r');
+    size_t LF = clientInBuffer.find_first_of('\n');
 
+    // Check if there is anything after the \r\n / \n
     if (CR != string::npos) {
         // Only remove \r\n, check if anything after, and store it in a buffer
-        clientBuffer.erase(CR, 2);
+        clientInBuffer.erase(CR, 2);
     } else if (LF != string::npos) {
         // !! Only remove \n, check if anything after, and store it in a buffer
-        clientBuffer.erase(LF);
+        clientInBuffer.erase(LF);
     }
 
     cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;

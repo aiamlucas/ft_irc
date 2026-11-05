@@ -38,12 +38,13 @@ public:
     bool listenSetUp();
     void pollAndAccept();
     void acceptNewClient();
+    void addClientIP();
     bool isPasswordAccepted();
     void setUpNewSocket(int socketFDToAdd);
     void parsePollfds_n_receive();
     std::vector<pollfd>::iterator receive_n_sendToParsing(
         int ClientSocket, std::vector<pollfd>::iterator currentPos);
-    void checkString(std::string& clientBuffer);
+    void checkString(std::string& clientInBuffer);
     // TO DO - Close all opened sockets + FD before leaving
     void closeBeforeExit();
 };
