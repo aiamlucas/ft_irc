@@ -13,7 +13,7 @@
 
 #include "includes/colors.hpp"
 
-// Next : refactor other filse than Server.cpp
+// Next : refactor other files than Server.cpp
 // + function to remove clients from everything
 // + buffer with what's following \r\n
 
