@@ -4,6 +4,22 @@
 #include <cstddef>
 #include <string>
 
+// an IRC line looks like:
+//
+// [:prefix] COMMAND [param_1 param_2 ...] [:trailing]
+//
+// Ex: ":ssin!ssin@192.168.0.4 PRIVMSG #42berlin :hey Oipoulette people!"
+//
+// prefix  -> "ssin!ssin@192.168.0.4" (prefix is optional and starts with ':')
+// command -> "PRIVMSG"
+// params  -> ["#42berlin", "hey Oipoulette people!"]
+//
+// spaces are delimiters
+//
+// trailing is always the last param.
+// It starts with ':' as first char and it's includes the rest of line
+
+// without ':' there is no prefix (pos stays at 0)
 static void parsePrefix(const std::string& line, std::size_t& pos,
                         Message& parsed) {
     if (line.empty() || line[0] != ':') return;
@@ -14,11 +30,14 @@ static void parsePrefix(const std::string& line, std::size_t& pos,
     pos = end;
 }
 
+// reads one word starting at pos
+// false -> no word left in the line
+// true  -> stores the word
 static bool readWord(const std::string& line, std::size_t& pos,
                      std::string& word) {
     pos = line.find_first_not_of(' ', pos);
     if (pos == std::string::npos) {
-        pos = line.size();
+        pos = line.size();  // only spaces or nothing left
         return false;
     }
     std::size_t end = line.find(' ', pos);
@@ -29,14 +48,17 @@ static bool readWord(const std::string& line, std::size_t& pos,
     return true;
 }
 
+// parameters comes after the COMMAND
+// it can be max 15 params (RFC 2812)
 static void parseParams(const std::string& line, std::size_t& pos,
                         Message& parsed) {
     std::string word;
     const std::size_t maxParams = 15;  // RFC 2812 - limit of 15 parameters
     while (true) {
         pos = line.find_first_not_of(' ', pos);
-        if (pos == std::string::npos) return;
-        if (parsed.params.size() >= maxParams) return;
+        if (pos == std::string::npos) return;           // only spaces left
+        if (parsed.params.size() >= maxParams) return;  // rest is ignored
+        // ':' as first char: trailing starts
         if (line[pos] == ':') {
             parsed.params.push_back(line.substr(pos + 1));
             return;
