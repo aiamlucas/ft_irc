@@ -38,7 +38,7 @@ public:
     bool listenSetUp();
     void pollAndAccept();
     void acceptNewClient();
-    void addClientIP();
+    std::string convClientIP(const in_addr rawClientIP);
     bool isPasswordAccepted();
     void setUpNewSocket(int socketFDToAdd);
     void parsePollfds_n_receive();

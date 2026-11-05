@@ -1,6 +1,6 @@
 #include "Server.hpp"
 
-#include <arpa/inet.h>   // htons()
+#include <arpa/inet.h>   // htons() inet_ntop()
 #include <fcntl.h>       // fcntl
 #include <stdlib.h>      // strtol
 #include <sys/socket.h>  // socket()
@@ -127,27 +127,50 @@ void Server::acceptNewClient() {
     socklen_t addrlen = sizeof(newClientAddr);
     int ClientSocket =
         accept(_pollfdParty[0].fd, (struct sockaddr*)&newClientAddr, &addrlen);
-    cout << CL_LIGHT_BLUE << "Client port is : " << newClientAddr.sin_port
-         << "\nClient IP is : " << newClientAddr.sin_addr.s_addr << RESET
-         << endl;
-    // Only args allowed by subject
-    if (fcntl(ClientSocket, F_SETFL, O_NONBLOCK) == -1)
-        cerr << CL_RED << "Issue w/ fcntl() : " << strerror(errno)
-             << " on client fd : " << ClientSocket << RESET << endl;
-
     if (ClientSocket == -1) {
-        cerr << CL_RED << "Client socket creation failed : " << strerror(errno)
-             << RESET << endl;
+        cerr << CL_RED << "Fail to accept Client socket\n" << RESET;
+        return;
+    }
+
+    string convIP = convClientIP(newClientAddr.sin_addr);
+    if (convIP.empty()) {
+        close(ClientSocket);
+        return;
+    }
+
+    cout << CL_LIGHT_BLUE
+         << "Client port is : " << ntohs(newClientAddr.sin_port)
+         << "\nClient raw IP is : " << newClientAddr.sin_addr.s_addr
+         << "\nClient IP is : " << convIP << RESET << endl;
+    // Only args allowed by subject
+    if (fcntl(ClientSocket, F_SETFL, O_NONBLOCK) == -1) {
+        cerr << CL_RED
+             << "fcntl failed on setting Client socket to non blocking : "
+             << strerror(errno) << " (fd : " << ClientSocket << ")" RESET
+             << endl;
+        close(ClientSocket);
     } else {
         // Add last ClientSocket in _pollfdParty + _clientsParty :
         setUpNewSocket(ClientSocket);
         Client NewClient(ClientSocket);
-        // Add Client IP here
+        NewClient.setHostname(convIP);
         _clientsParty.insert(std::pair<int, Client>(ClientSocket, NewClient));
     }
 }
-//     addClientIP();
-void Server::addClientIP() {}
+
+string Server::convClientIP(const in_addr rawClientIP) {
+    // man inet_ntop() : The buffer must be at least INET_ADDRSTRLEN bytes
+    // long
+    char buffer[INET_ADDRSTRLEN];
+    if (!inet_ntop(AF_INET, &rawClientIP, buffer, INET_ADDRSTRLEN)) {
+        cerr << CL_RED
+             << "Fail in IP to string conversion : " << strerror(errno) << RESET
+             << endl;
+        return "";
+    }
+    string convIP(buffer);
+    return convIP;
+}
 
 void Server::parsePollfds_n_receive() {
     for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
@@ -155,7 +178,8 @@ void Server::parsePollfds_n_receive() {
         size_t vecSiz = _pollfdParty.size();
         if ((*it).fd == _listeningSocketFD) continue;
         if ((*it).revents & POLLIN) it = receive_n_sendToParsing((*it).fd, it);
-        // POLLERR = Error condition	POLLHUP = Hung up (Full list in poll.h)
+        // POLLERR = Error condition	POLLHUP = Hung up (Full list in
+        // poll.h)
         else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) {
             cout << CL_RED_REVERT << "Debug - revents is not POLLIN : ["
                  << "]\n"
@@ -174,18 +198,20 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
 
     ssize_t bytesReceived = 0;
     char buffer[MAX_BUFFER_SIZE] = {0};
-    // Flag MSG_DONTWAIT enables nonblocking operation but used fcntl() instead
+    // Flag MSG_DONTWAIT enables nonblocking operation but used fcntl()
+    // instead
     bytesReceived = recv(ClientSocket, &buffer, MAX_BUFFER_SIZE, 0);
 
     // If client sends something else, it doesn't print because server is
     // waiting for a new connection - Fix that
     if (bytesReceived == -1)
-    // Subject : After recv(),you must not rely on errno to decide what to do
-    // next (for instance, reading again after errno == EAGAIN). Doing so will
-    // set your grade to 0.
+    // Subject : After recv(),you must not rely on errno to decide what to
+    // do next (for instance, reading again after errno == EAGAIN). Doing so
+    // will set your grade to 0.
     {
         cerr << CL_BLUE
-             << "-1 bytes received - Nothing to read or issue ? Investigate. "
+             << "-1 bytes received - Nothing to read or issue ? "
+                "Investigate. "
                 "Tmp Debug Errno (forbidden - to remove) : "
              << strerror(errno) << RESET << endl;
         return currentPos;
@@ -199,7 +225,8 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
 
     std::map<int, Client>::iterator SearchclientInBuffer =
         _clientsParty.find(ClientSocket);
-    // TO DO : edge case if find returns end (very low prob but good practice)
+    // TO DO : edge case if find returns end (very low prob but good
+    // practice)
     string& clientInBuffer = (*SearchclientInBuffer).second.getInBuffer();
 
     clientInBuffer.append(buffer, bytesReceived);
@@ -247,10 +274,12 @@ void Server::checkString(string& clientInBuffer) {
 
     // Check if there is anything after the \r\n / \n
     if (CR != string::npos) {
-        // Only remove \r\n, check if anything after, and store it in a buffer
+        // Only remove \r\n, check if anything after, and store it in a
+        // buffer
         clientInBuffer.erase(CR, 2);
     } else if (LF != string::npos) {
-        // !! Only remove \n, check if anything after, and store it in a buffer
+        // !! Only remove \n, check if anything after, and store it in a
+        // buffer
         clientInBuffer.erase(LF);
     }
 
