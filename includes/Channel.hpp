@@ -36,7 +36,7 @@ public:
     // Operators
     void addOperator(int fd);     // +o
     void removeOperator(int fd);  // -o
-    void isOperator(int fd) const;  // --> is this client operator from this channel?
+    bool isOperator(int fd) const;  // --> is this client operator from this channel?
 
     // Membership
     void join(int fd);  // --> for joining a channel
