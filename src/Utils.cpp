@@ -1,6 +1,6 @@
 #include "../includes/Utils.hpp"
 
-int argsCheck(char *argv[]) {
+int argsCheck(char* argv[]) {
     std::string password = argv[2];
     int port;
     // Port numbers are 16-bit in TCP (0-65535) and 0 is already reserved for
@@ -15,7 +15,7 @@ int argsCheck(char *argv[]) {
         std::cerr << "Error: password cannot be empty" << std::endl;
         return INVALID_ARGS;
     }
-	return 1;
+    return 1;
 }
 
 static bool checkOverFlow(int num, int digit, int sign) {
