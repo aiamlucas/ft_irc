@@ -6,6 +6,7 @@ std::string numericReply(const Client& client, const std::string& numberCode,
                          const std::string& info) {
     std::string servername = "oipoulette";
     std::string nick = client.getNickname();
+    // "*" if the client has no nickname
     if (nick.empty()) nick = "*";
     return ":" + servername + " " + numberCode + " " + nick + " " + info;
 }
