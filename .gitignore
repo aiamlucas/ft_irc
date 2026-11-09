@@ -9,6 +9,7 @@
 build/
 ircserv
 test_protocol
+test_handlers
 
 # --- clangd / language server ---
 compile_commands.json
