@@ -11,6 +11,7 @@
 #include <cerrno>  // errno()
 #include <iostream>
 
+#include "Handlers.hpp"
 #include "colors.hpp"
 
 /*
@@ -23,7 +24,7 @@ Next :
 TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 */
 
-#define MAX_BUFFER_SIZE 512
+#define MAX_INBUFFER_SIZE 510
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -196,14 +197,14 @@ void Server::parsePollfds_n_receive() {
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     int ClientSocket, std::vector<pollfd>::iterator currentPos) {
     cout << CL_GREEN_BOLD << "*** BYTES INCOMING ! ***\n" << RESET;
-    // A cmd can be splitted into many buffers
-    // AND 2 cmds can be in the same buffer
 
     ssize_t bytesReceived = 0;
-    char buffer[MAX_BUFFER_SIZE] = {0};
+    // Change size to INT_MAX ? More ? Less ? Change also for recv
+    char buffer[10000] = {0};
     // Flag MSG_DONTWAIT enables nonblocking operation but
     // used fcntl() instead
-    bytesReceived = recv(ClientSocket, &buffer, MAX_BUFFER_SIZE, 0);
+    // Change arg 3 to buffer size (right above)
+    bytesReceived = recv(ClientSocket, &buffer, 10000, 0);
 
     // If client sends something else, it doesn't print because server is
     // waiting for a new connection - Fix that
@@ -213,7 +214,7 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     // will set your grade to 0.
     {
         cerr << CL_BLUE
-             << "-1 bytes received - Nothing to read or issue ? "
+             << "revc() returned -1 : Nothing to read or issue ? "
                 "Investigate. "
                 "Tmp Debug Errno (forbidden - to remove) : "
              << strerror(errno) << RESET << endl;
@@ -229,79 +230,73 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     string toParsing;
     toParsing.append(buffer, bytesReceived);
 
+    cout << "Buffer content :\n-->" << CL_PURPLE_BG
+         << string(buffer, bytesReceived) << RESET << "<-- (" << bytesReceived
+         << " bytes received)"
+         << " from FD " << ClientSocket << "\n --------------\n";
+
     if (toParsing.find('\n' /*, sizeof(toParsing)*/) == toParsing.npos) {
         cout << CL_PURPLE_DIM
              << "Command cropped (additional bytes incoming ...)\n"
              << RESET;
     } else {
-        // Check if chars after line return and store them in buffer ?
         cout << CL_BLUE_DIM
-             << "Line return found - String might good to be handled by "
-                "parsing - Checking ...\n"
+             << "Line return found - String might good to be split and handled "
+                "to parsing - Checking ...\n"
              << RESET;
         check_n_sendString(ClientSocket, toParsing);
     }
 
-    cout << "Buffer content : -->" << string(buffer, bytesReceived) << "<-- ("
-         << bytesReceived << " bytes received)"
-         << " - Leftover chars, if applicable : [" << toParsing << "] From FD "
-         << ClientSocket << "\n --------------\n";
-
     return currentPos;
 }
 
-/*
-NB / TODO : One read can contain several lines,
-or just a line
-or half of the next line (similar logic to the ft_getnextline)
-Skip empty lines
-*/
 void Server::check_n_sendString(int ClientSocket, string& toParsing) {
-    if (toParsing.size() > 510) {
-        cerr << CL_RED_BOLD
-             << "\t... Buffer is too long - Max 510 chars allowed\n\n"
-             << RESET;
-        toParsing.erase();
-        return;
+    // Removed size check because not relevant here anymore
+    // (will be checked later)
+
+    // INPUT TESTED SUCCESSFULLY :
+    // echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
+
+    while (toParsing.find_first_of('\n') != string::npos) {
+        // save iterator/position for \n
+        size_t LF_index = toParsing.find_first_of('\n');
+        // '\n' will be removed here
+        string tmp = toParsing.substr(0, LF_index);
+        if (tmp.find('\r') != string::npos) {
+            tmp.erase(LF_index - 1);
+        }
+        if (tmp.size() >= 510) {
+            cerr << CL_RED_BOLD << "Line too long\n" << RESET;
+        } else {
+            cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n" << RESET;
+            // TO DO : edge case if find returns end
+            // (very low prob but good practice)
+            std::map<int, Client>::iterator currentClientInstance =
+                _clientsParty.find(ClientSocket);
+            string& clientInBuffer =
+                (*currentClientInstance).second.getInBuffer();
+            // Put the clean command in client inBuffer
+            clientInBuffer.append(tmp.c_str());
+            cout << CL_GREEN_BOLD << "\tNow in client inBuffer : ["
+                 << clientInBuffer << "]\n"
+                 << RESET;
+            // Handle to parsing
+            handleLine(*this, (*currentClientInstance).second, clientInBuffer);
+            // Clear client inBuffer for the next command
+            clientInBuffer.clear();
+            std::cout << "\t" CL_GREEN_DIM << "Client outBuffer : ["
+                      << (*currentClientInstance).second.getOutBuffer() << "]\n"
+                      << RESET;
+        }
+        // Clear temp for the next command
+        tmp.clear();
+        cout << "toParsing before crop :\n-->" << CL_WHITE_REVERT << toParsing
+             << RESET << "<--\n";
+        // Crop the buffer to keep what hasn't been sent yet
+        toParsing.erase(0, LF_index + 1);
+        cout << "toParsing after crop :\n-->" << CL_WHITE_REVERT << toParsing
+             << RESET << "<--\n";
     }
-
-    // save iterator/position for \n and for \r
-    size_t CR = toParsing.find_first_of('\r');
-    size_t LF = toParsing.find_first_of('\n');
-    size_t lengthToCopy = 0;
-
-    // Check if there is anything after the \r\n / \n
-    if (CR != string::npos) {
-        // Only remove \r\n, check if anything after,
-        // and store it in a buffer
-        toParsing.erase(CR, 2);
-        lengthToCopy = CR;
-    } else if (LF != string::npos) {
-        // !! Only remove \n, check if anything after,
-        // and store it in a buffer
-        toParsing.erase(LF, 1);
-        lengthToCopy = LF;
-    }
-
-    cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n" << RESET;
-
-    // TO DO : edge case if find returns end
-    // (very low prob but good practice)
-    std::map<int, Client>::iterator SearchclientInBuffer =
-        _clientsParty.find(ClientSocket);
-    string& clientInBuffer = (*SearchclientInBuffer).second.getInBuffer();
-    clientInBuffer.append(toParsing.c_str(), lengthToCopy);
-
-    cout << CL_GREEN_BOLD << "\tNow in client inBuffer : [" << clientInBuffer
-         << "]\n"
-         << RESET;
-
-    // Check if there are chars after \r\n (pos lengthToCopy)
-    if (toParsing.size() != lengthToCopy) {
-        toParsing.erase(0, lengthToCopy);
-    }
-    cout << CL_YELLOW_REVERT << "DEBUG - toParsing : " << toParsing << RESET
-         << endl;
 }
 
 // _listeningSocket is at position [0] or (_pollfdParty.begin())
