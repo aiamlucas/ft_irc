@@ -28,3 +28,32 @@ bool Client::isRegistered() const {
 std::string Client::prefix() const {
     return _nickname + "!" + _username + "@" + _hostname;
 }
+
+// add a finish line to the output buffer of the client
+// the protocol layer passes a line for this client (server->client)
+// it can be a numeric reply, a pong reply, a message from a user, etc
+//
+//  Porotocol          Client                Engine
+// queue(line) ----> _outBuffer -----------> send()->socket
+//                                 when socket is ready the message is sent
+
+// "\r\n" is added to every line
+// ex: _outBuffer:
+//                ":ssin!ssin@127.0.0.6 NICK :sara\r\n
+//                :sun!sun@127.0.0.31 JOIN #42berlin\r\n"
+void Client::queue(const std::string& line) {
+    const std::size_t lineLimit = 510;
+    _outBuffer += line.substr(0, lineLimit);
+    _outBuffer += "\r\n";
+}
+
+bool Client::hasOutput() const {
+    if (_outBuffer.empty()) return false;
+    return true;
+}
+
+const std::string& Client::getOutBuffer() const { return _outBuffer; }
+
+void Client::eraseOutBuffer(std::size_t n_bytes) {
+    _outBuffer.erase(0, n_bytes);
+}

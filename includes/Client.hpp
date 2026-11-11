@@ -1,6 +1,7 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
+#include <cstddef>
 #include <string>
 
 class Client {
@@ -34,6 +35,12 @@ public:
     bool isWelcomeOk() const;
     bool isRegistered() const;   // password + username + nickname
     std::string prefix() const;  // "nickname!username@hostname"
+
+    void queue(const std::string& line);
+    bool hasOutput() const;
+    const std::string& getOutBuffer() const;
+    // remove the first n_bytes already sent
+    void eraseOutBuffer(std::size_t n_bytes);
 };
 
 #endif
