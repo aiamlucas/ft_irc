@@ -1,4 +1,4 @@
-#include "../../includes/Channel.hpp"
+#include "Channel.hpp"
 
 // Parametrized constructor
 Channel::Channel(const std::string& name)
