@@ -14,6 +14,7 @@ Color codes : https://i.sstatic.net/9UVnC.png
 */
 #define RESET "\e[0m"
 
+#define BOLD "\e[1m"
 #define CL_BLACK "\e[30m"
 #define CL_GREY "\e[90m"
 #define CL_WHITE "\e[37m"
