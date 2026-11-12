@@ -65,6 +65,7 @@ static void handlePass(Server& server, Client& client, const Message& message) {
     if (!server.isPasswordAccepted(message.params[0])) {
         client.queue(
             numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
+        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #10)
         return;
     }
     client.setPasswordOk();
