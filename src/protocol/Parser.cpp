@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <string>
 
+#include "IrcMacros.hpp"
+
 // an IRC line looks like:
 //
 // [:prefix] COMMAND [param_1 param_2 ...] [:trailing]
@@ -48,16 +50,13 @@ static bool readWord(const std::string& line, std::size_t& pos,
     return true;
 }
 
-// parameters comes after the COMMAND
-// it can be max 15 params (RFC 2812)
 static void parseParams(const std::string& line, std::size_t& pos,
                         Message& parsed) {
     std::string word;
-    const std::size_t maxParams = 15;  // RFC 2812 - limit of 15 parameters
     while (true) {
         pos = line.find_first_not_of(' ', pos);
-        if (pos == std::string::npos) return;           // only spaces left
-        if (parsed.params.size() >= maxParams) return;  // rest is ignored
+        if (pos == std::string::npos) return;            // only spaces left
+        if (parsed.params.size() >= MAX_PARAMS) return;  // rest is ignored
         // ':' as first char: trailing starts
         if (line[pos] == ':') {
             parsed.params.push_back(line.substr(pos + 1));
