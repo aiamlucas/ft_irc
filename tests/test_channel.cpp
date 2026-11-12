@@ -2,6 +2,7 @@
 #include "colors.hpp"
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 static int g_total = 0;
 static int g_failed = 0;
