@@ -8,6 +8,7 @@
 #include "Message.hpp"
 #include "Parser.hpp"
 #include "Replies.hpp"
+#include "Server.hpp"
 
 // a function pointer (calling through a lookup table)
 typedef void (*Handler)(Server&, Client&, const Message&);
@@ -50,11 +51,31 @@ static void handlePing(Server&, Client& client, const Message& message) {
     client.queue(pongReply(message.params[0]));
 }
 
+static void handlePass(Server& server, Client& client, const Message& message) {
+    if (message.params.empty()) {
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "PASS " ERR_NEEDMOREPARAMS_MSG));
+        return;
+    }
+    if (client.isRegistered()) {
+        client.queue(numericReply(client, ERR_ALREADYREGISTRED,
+                                  ERR_ALREADYREGISTRED_MSG));
+        return;
+    }
+    if (!server.isPasswordAccepted(message.params[0])) {
+        client.queue(
+            numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
+        return;
+    }
+    client.setPasswordOk();
+}
+
 // lookup table
 static const Command commands[] = {
     {"JOIN", handleJoin},
     {"NICK", handleNick},
     {"PING", handlePing},
+    {"PASS", handlePass},
 };
 
 // finds the right command in the lookup table and calls its handler
