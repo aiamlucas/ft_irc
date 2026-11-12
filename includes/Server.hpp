@@ -39,7 +39,7 @@ public:
     void pollAndAccept();
     void acceptNewClient();
     std::string convClientIP(const in_addr rawClientIP);
-    bool isPasswordAccepted();
+    bool isPasswordAccepted(const std::string& password) const;
     void setUpNewSocket(int socketFDToAdd);
     void parsePollfds_n_receive();
     std::vector<pollfd>::iterator receive_n_sendToParsing(
