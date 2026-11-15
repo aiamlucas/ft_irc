@@ -251,9 +251,6 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
 }
 
 void Server::check_n_sendString(int ClientSocket, string& toParsing) {
-    // Removed size check because not relevant here anymore
-    // (will be checked later)
-
     // INPUT TESTED SUCCESSFULLY :
     // echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
 
@@ -265,7 +262,7 @@ void Server::check_n_sendString(int ClientSocket, string& toParsing) {
         if (tmp.find('\r') != string::npos) {
             tmp.erase(LF_index - 1);
         }
-        if (tmp.size() >= 510) {
+        if (tmp.size() > 510) {
             cerr << CL_RED_BOLD << "Line too long\n" << RESET;
         } else {
             cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n" << RESET;
