@@ -34,6 +34,7 @@ TEST_HANDLERS_SRC  += src/protocol/Handlers.cpp
 TEST_HANDLERS_SRC  += src/protocol/Parser.cpp
 TEST_HANDLERS_SRC  += src/protocol/Replies.cpp
 TEST_HANDLERS_SRC  += src/engine/Client.cpp
+TEST_HANDLERS_SRC  += src/engine/Server.cpp
 
 TEST_HANDLERS_OBJ  =  $(TEST_HANDLERS_SRC:.cpp=.o)
 

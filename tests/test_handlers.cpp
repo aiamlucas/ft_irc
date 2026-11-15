@@ -4,27 +4,29 @@
 
 #include "Client.hpp"
 #include "Handlers.hpp"
+#include "Server.hpp"
 #include "colors.hpp"
 
-// empty server, so that we can call handleLine in the tests
-// (no need to open sockets, etc)
-class Server {};
+// no sockets are opened, the password is "poulettepass"
+static Server server(6667, "poulettepass");
 
 static int g_total = 0;
 static int g_failed = 0;
 
+static void printTest(const std::string& title) {
+    std::cout << "\n" << CL_GREY << "\\\\" << title << RESET << std::endl;
+}
+
 static void expectHandleLine(Client& client, const std::string& line,
                              const std::string& expected) {
-    Server server;
     handleLine(server, client, line);
     std::string output = client.getOutBuffer();
     client.eraseOutBuffer(output.size());
     g_total++;
     if (output == expected) {
-        std::cout << "\n"
-                  << CL_GREEN << "OK: " << RESET << "\"" << line << "\""
+        std::cout << CL_GREEN << "OK: " << RESET << "\"" << line << "\""
                   << "\n"
-                  << output << std::endl;
+                  << output;
         return;
     }
     g_failed++;
@@ -33,64 +35,71 @@ static void expectHandleLine(Client& client, const std::string& line,
               << " output:    " << output << std::endl;
 }
 
-// commands tested: PING
+static void expectPasswordOk(Client& client, bool expected) {
+    g_total++;
+    if (client.isPasswordOk() == expected) {
+        std::cout << BOLD << "Password accepted: " << std::boolalpha << expected
+                  << RESET << std::endl;
+        return;
+    }
+    g_failed++;
+    std::cerr << CL_RED << "FAIL: " << RESET BOLD << "Password accepted:\n"
+              << std::boolalpha << " expected: " << expected << "\n"
+              << " got: " << client.isPasswordOk() << RESET << std::endl;
+}
+
 // commands partly tested: NICK and JOIN (only the missing parameter)
 // TODO: test NICK and JOIN when they are fully implemented
 int main() {
     std::string line;
     std::string expected;
 
-    // Test 1
-    // PING: shoud answer with PONG and the same token
     {
+        printTest("Test 1: PING: should answer with PONG and the same token");
         Client client(4);
         line = "PING oie";
         expected = ":oipoulette PONG oipoulette :oie\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 2
-    // PING again but this time lowercase (it should work)
     {
+        printTest(
+            "Test 2: PING in lowercase (should answer with PONG and same "
+            "token)");
         Client client(4);
         line = "ping oie";
         expected = ":oipoulette PONG oipoulette :oie\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 3
-    // PING without a token (should be 461 not enough parameters)
     {
+        printTest("Test 3: PING without a token (461 not enough parameters)");
         Client client(4);
         line = "PING";
         expected = ":oipoulette 461 * PING :Not enough parameters\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 4
-    // NICK without a nickname (431 no nickname given)
     {
+        printTest("Test 4: NICK without a nickname (431 no nickname given)");
         Client client(4);
         line = "NICK";
         expected = ":oipoulette 431 * :No nickname given\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 5
-    // JOIN (without a channel -> should give 461)
     {
+        printTest("Test 5: JOIN without a channel (461 not enough parameters)");
         Client client(4);
         line = "JOIN";
         expected = ":oipoulette 461 * JOIN :Not enough parameters\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 6
-    // NOHANDLER (command is not in the lookup list -> should give 421)
     {
+        printTest("Test 6: NOHANDLER, not in the lookup table (421)");
         Client client(4);
         line = "NOHANDLER";
         expected = ":oipoulette 421 * NOHANDLER :Unknown command\r\n";
         expectHandleLine(client, line, expected);
     }
-    // Test 7
-    // two commands in a row from the same client
     {
+        printTest("Test 7: two commands in a row from the same client");
         Client client(4);
         line = "PING oie";
         expected = ":oipoulette PONG oipoulette :oie\r\n";
@@ -98,6 +107,42 @@ int main() {
 
         line = "PING hi";
         expected = ":oipoulette PONG oipoulette :hi\r\n";
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 8: PASS without a parameter (461, not accepted)");
+        Client client(4);
+        line = "PASS";
+        expected = ":oipoulette 461 * PASS :Not enough parameters\r\n";
+        expectHandleLine(client, line, expected);
+        expectPasswordOk(client, false);
+    }
+    {
+        printTest(
+            "Test 9: PASS with the wrong password (464, password not "
+            "accepted)");
+        Client client(4);
+        line = "PASS thispassinsnotcorrect";
+        expected = ":oipoulette 464 * :Password incorrect\r\n";
+        expectHandleLine(client, line, expected);
+        expectPasswordOk(client, false);
+    }
+    {
+        printTest("Test 10: PASS with the right password (no reply, accepted)");
+        Client client(4);
+        line = "PASS poulettepass";
+        expected = "";
+        expectHandleLine(client, line, expected);
+        expectPasswordOk(client, true);
+    }
+    {
+        printTest("Test 11: PASS when the client is already registered (462)");
+        Client client(4);
+        client.setPasswordOk();
+        client.setNickname("ssin");
+        client.setUsername("ssin");
+        line = "PASS poulettepass";
+        expected = ":oipoulette 462 ssin :You may not reregister\r\n";
         expectHandleLine(client, line, expected);
     }
 
