@@ -30,6 +30,10 @@ Server::Server(int port, const string& password)
 
 Server::~Server() {}
 
+bool Server::isPasswordAccepted(const string& password) const {
+    return password == _password;
+}
+
 bool Server::openSocket() {
     if ((_listeningSocketFD = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         cerr << CL_RED
