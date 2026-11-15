@@ -10,6 +10,7 @@ build/
 ircserv
 test_protocol
 test_handlers
+test_channel
 
 # --- clangd / language server ---
 compile_commands.json

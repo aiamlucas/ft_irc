@@ -4,6 +4,7 @@
 #include <string>
 
 #include "Client.hpp"
+#include "IrcMacros.hpp"
 #include "Message.hpp"
 #include "Parser.hpp"
 #include "Replies.hpp"
@@ -21,8 +22,8 @@ struct Command {
 // message should be: JOIN <#channel>
 static void handleJoin(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(
-            numericReply(client, "461", "JOIN :Not enough parameters"));
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "JOIN " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
     // TODO: find or create the channel, add the client, tell the other members
@@ -32,7 +33,8 @@ static void handleJoin(Server&, Client& client, const Message& message) {
 // message should be: NICK <nickname>
 static void handleNick(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(numericReply(client, "431", ":No nickname given"));
+        client.queue(
+            numericReply(client, ERR_NONICKNAMEGIVEN, ERR_NONICKNAMEGIVEN_MSG));
         return;
     }
     client.setNickname(message.params[0]);
@@ -41,8 +43,8 @@ static void handleNick(Server&, Client& client, const Message& message) {
 // message should be: PING <token>
 static void handlePing(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(
-            numericReply(client, "461", "PING :Not enough parameters"));
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "PING " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
     client.queue(pongReply(message.params[0]));
@@ -69,6 +71,6 @@ void handleLine(Server& server, Client& client, const std::string& line) {
         }
     }
     // command is not in the lookup table
-    client.queue(
-        numericReply(client, "421", message.command + " :Unknown command"));
+    client.queue(numericReply(client, ERR_UNKNOWNCOMMAND,
+                              message.command + " " ERR_UNKNOWNCOMMAND_MSG));
 }
