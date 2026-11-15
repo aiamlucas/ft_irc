@@ -25,6 +25,9 @@ TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 */
 
 #define MAX_INBUFFER_SIZE 510
+#define SEPARATOR                                                              \
+    "________________________________________________________________________" \
+    "\n"
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -200,7 +203,9 @@ void Server::parsePollfds_n_receive() {
 
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     int ClientSocket, std::vector<pollfd>::iterator currentPos) {
-    cout << CL_GREEN_BOLD << "*** BYTES INCOMING ! ***\n" << RESET;
+    cout << CL_BRIGHT_PURPLE_BOLD << SEPARATOR
+         << "\t\t\t*** BYTES INCOMING ! ***\n"
+         << RESET;
 
     ssize_t bytesReceived = 0;
     // Change size to INT_MAX ? More ? Less ? Change also for recv
@@ -231,15 +236,21 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
         return (_pollfdParty.erase(currentPos));
     }
 
-    string toParsing;
-    toParsing.append(buffer, bytesReceived);
+    std::map<int, Client>::iterator currentClientInstance =
+        _clientsParty.find(ClientSocket);
+    // Client not found :
+    if (currentClientInstance == _clientsParty.end()) return currentPos;
 
-    cout << "Buffer content :\n-->" << CL_PURPLE_BG
-         << string(buffer, bytesReceived) << RESET << "<-- (" << bytesReceived
-         << " bytes received)"
-         << " from FD " << ClientSocket << "\n --------------\n";
+    string& clientInBuffer = (*currentClientInstance).second.getInBuffer();
+    // Put the bits received in client inBuffer
+    clientInBuffer.append(buffer, bytesReceived);
 
-    if (toParsing.find('\n' /*, sizeof(toParsing)*/) == toParsing.npos) {
+    cout << bytesReceived << " bytes received"
+         << " from FD " << ClientSocket << "\n --------------\n"
+         << RESET;
+
+    if (clientInBuffer.find('\n' /*, sizeof(clientInBuffer)*/) ==
+        clientInBuffer.npos) {
         cout << CL_PURPLE_DIM
              << "Command cropped (additional bytes incoming ...)\n"
              << RESET;
@@ -248,55 +259,47 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << "Line return found - String might good to be split and handled "
                 "to parsing - Checking ...\n"
              << RESET;
-        check_n_sendString(ClientSocket, toParsing);
+        check_n_sendString(currentClientInstance, clientInBuffer);
     }
 
     return currentPos;
 }
 
-void Server::check_n_sendString(int ClientSocket, string& toParsing) {
+void Server::check_n_sendString(
+    std::map<int, Client>::iterator currentClientInstance,
+    string& clientInBuffer) {
     // INPUT TESTED SUCCESSFULLY :
     // echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
 
-    while (toParsing.find_first_of('\n') != string::npos) {
+    while (clientInBuffer.find_first_of('\n') != string::npos) {
         // save iterator/position for \n
-        size_t LF_index = toParsing.find_first_of('\n');
-        // '\n' will be removed here
-        string tmp = toParsing.substr(0, LF_index);
+        size_t LF_index = clientInBuffer.find_first_of('\n');
+        // '\n' will be removed here - Tmp has what we want to send
+        string tmp = clientInBuffer.substr(0, LF_index);
         if (tmp.find('\r') != string::npos) {
             tmp.erase(LF_index - 1);
         }
         if (tmp.size() > 510) {
             cerr << CL_RED_BOLD << "Line too long\n" << RESET;
         } else {
-            cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n" << RESET;
-            // TO DO : edge case if find returns end
-            // (very low prob but good practice)
-            std::map<int, Client>::iterator currentClientInstance =
-                _clientsParty.find(ClientSocket);
-            string& clientInBuffer =
-                (*currentClientInstance).second.getInBuffer();
-            // Put the clean command in client inBuffer
-            clientInBuffer.append(tmp.c_str());
-            cout << CL_GREEN_BOLD << "\tNow in client inBuffer : ["
-                 << clientInBuffer << "]\n"
+            cout << CL_GREEN_BOLD
+                 << "\t... GOOD TO GO ! - Full line to be handled : [" << tmp
+                 << "]\n"
                  << RESET;
             // Handle to parsing
-            handleLine(*this, (*currentClientInstance).second, clientInBuffer);
+            handleLine(*this, (*currentClientInstance).second, tmp);
             // Clear client inBuffer for the next command
-            clientInBuffer.clear();
+            tmp.clear();
             std::cout << "\t" CL_GREEN_DIM << "Client outBuffer : ["
                       << (*currentClientInstance).second.getOutBuffer() << "]\n"
                       << RESET;
         }
+        // TO DO : When should I erase the outBuffer ?
+        // (*currentClientInstance).second.eraseOutBuffer(how many bytes ?);
         // Clear temp for the next command
         tmp.clear();
-        cout << "toParsing before crop :\n-->" << CL_WHITE_REVERT << toParsing
-             << RESET << "<--\n";
         // Crop the buffer to keep what hasn't been sent yet
-        toParsing.erase(0, LF_index + 1);
-        cout << "toParsing after crop :\n-->" << CL_WHITE_REVERT << toParsing
-             << RESET << "<--\n";
+        clientInBuffer.erase(0, LF_index + 1);
     }
 }
 
