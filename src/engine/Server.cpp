@@ -15,13 +15,16 @@
 #include "colors.hpp"
 
 /*
-In Progress :
-- buffer with what's following \r\n
-
 Next :
 - Function to remove clients from everything (already done by Lucas ?)
+- Switch SERVER_RUNNING to false when signal received,
+        to quit the program properly
 
-TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
+TEST COMMANDS FROM TERMINAL :
+echo "Salut Poulette !" | nc 127.0.0.1 55555
+echo "Salut Poulette !" | nc -C 127.0.0.1 55555
+echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
+nc 127.0.0.1 55555 < file.txt
 */
 
 #define MAX_INBUFFER_SIZE 510
@@ -107,8 +110,6 @@ bool Server::listenSetUp() {
 void Server::pollAndAccept() {
     setUpNewSocket(_listeningSocketFD);
 
-    // [TO DO] switch to false when signal received,
-    // to quit the program properly
     while (SERVER_RUNNING) {
         // Man poll : "negative value in timeout means an infinite timeout"
         if (poll(&_pollfdParty[0], static_cast<nfds_t>(_pollfdParty.size()),
@@ -229,16 +230,14 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << strerror(errno) << RESET << endl;
         return currentPos;
     } else if (bytesReceived == 0) {
-        cout << CL_YELLOW << "Closing FD\n --------" << RESET << endl;
-        // Erase returns() an iterator to the following element
-        _clientsParty.erase(ClientSocket);
-        close(ClientSocket);
-        return (_pollfdParty.erase(currentPos));
+        cout << CL_YELLOW << "Bye Bye fd " << ClientSocket << " !\n"
+             << RESET << endl;
+        return (removeClient(ClientSocket));
     }
 
     std::map<int, Client>::iterator currentClientInstance =
         _clientsParty.find(ClientSocket);
-    // Client not found :
+    // Client not found (edge case, low probability) :
     if (currentClientInstance == _clientsParty.end()) return currentPos;
 
     string& clientInBuffer = (*currentClientInstance).second.getInBuffer();
@@ -246,7 +245,7 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     clientInBuffer.append(buffer, bytesReceived);
 
     cout << bytesReceived << " bytes received"
-         << " from FD " << ClientSocket << "\n --------------\n"
+         << " from FD " << ClientSocket << "\n\n"
          << RESET;
 
     if (clientInBuffer.find('\n' /*, sizeof(clientInBuffer)*/) ==
@@ -256,8 +255,8 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << RESET;
     } else {
         cout << CL_BLUE_DIM
-             << "Line return found - String might good to be split and handled "
-                "to parsing - Checking ...\n"
+             << "\tLine return found - Checking if string good to go to "
+                "parsing ...\n"
              << RESET;
         check_n_sendString(currentClientInstance, clientInBuffer);
     }
@@ -268,9 +267,6 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
 void Server::check_n_sendString(
     std::map<int, Client>::iterator currentClientInstance,
     string& clientInBuffer) {
-    // INPUT TESTED SUCCESSFULLY :
-    // echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
-
     while (clientInBuffer.find_first_of('\n') != string::npos) {
         // save iterator/position for \n
         size_t LF_index = clientInBuffer.find_first_of('\n');
@@ -290,7 +286,7 @@ void Server::check_n_sendString(
             handleLine(*this, (*currentClientInstance).second, tmp);
             // Clear client inBuffer for the next command
             tmp.clear();
-            std::cout << "\t" CL_GREEN_DIM << "Client outBuffer : ["
+            std::cout << "\n" CL_GREEN_DIM << "Client outBuffer : ["
                       << (*currentClientInstance).second.getOutBuffer() << "]\n"
                       << RESET;
         }
@@ -313,10 +309,24 @@ void Server::setUpNewSocket(int socketFDToAdd) {
     // Check full list in man poll() or poll.h
     // If many needed, separate with a pipe sign
     NewSocket.events = POLLIN;
-    // No need - Will be filled up automatically later.
-    // NewSocket.revents = ;
 
     _pollfdParty.push_back(NewSocket);
+}
+
+std::vector<pollfd>::iterator Server::removeClient(int ClientSocket) {
+    std::vector<pollfd>::iterator nextClientSocket;
+    // From struct _clientsParty
+    _clientsParty.erase(ClientSocket);
+    // From struct _pollfdParty
+    for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
+         it != _pollfdParty.end(); it++) {
+        if ((*it).fd == ClientSocket) {
+            nextClientSocket = _pollfdParty.erase(it);
+            break;
+        }
+    }
+    close(ClientSocket);
+    return nextClientSocket;
 }
 
 void Server::closeBeforeExit() {

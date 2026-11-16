@@ -47,6 +47,7 @@ public:
     void check_n_sendString(
         std::map<int, Client>::iterator currentClientInstance,
         std::string& clientInBuffer);
+    std::vector<pollfd>::iterator removeClient(int ClientSocket);
     // TO DO - Close all opened sockets + FD before leaving
     void closeBeforeExit();
 };
