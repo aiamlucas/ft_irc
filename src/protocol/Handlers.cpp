@@ -4,9 +4,11 @@
 #include <string>
 
 #include "Client.hpp"
+#include "IrcMacros.hpp"
 #include "Message.hpp"
 #include "Parser.hpp"
 #include "Replies.hpp"
+#include "Server.hpp"
 
 // a function pointer (calling through a lookup table)
 typedef void (*Handler)(Server&, Client&, const Message&);
@@ -21,8 +23,8 @@ struct Command {
 // message should be: JOIN <#channel>
 static void handleJoin(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(
-            numericReply(client, "461", "JOIN :Not enough parameters"));
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "JOIN " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
     // TODO: find or create the channel, add the client, tell the other members
@@ -32,7 +34,8 @@ static void handleJoin(Server&, Client& client, const Message& message) {
 // message should be: NICK <nickname>
 static void handleNick(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(numericReply(client, "431", ":No nickname given"));
+        client.queue(
+            numericReply(client, ERR_NONICKNAMEGIVEN, ERR_NONICKNAMEGIVEN_MSG));
         return;
     }
     client.setNickname(message.params[0]);
@@ -41,11 +44,31 @@ static void handleNick(Server&, Client& client, const Message& message) {
 // message should be: PING <token>
 static void handlePing(Server&, Client& client, const Message& message) {
     if (message.params.empty()) {
-        client.queue(
-            numericReply(client, "461", "PING :Not enough parameters"));
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "PING " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
     client.queue(pongReply(message.params[0]));
+}
+
+static void handlePass(Server& server, Client& client, const Message& message) {
+    if (message.params.empty()) {
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "PASS " ERR_NEEDMOREPARAMS_MSG));
+        return;
+    }
+    if (client.isRegistered()) {
+        client.queue(numericReply(client, ERR_ALREADYREGISTRED,
+                                  ERR_ALREADYREGISTRED_MSG));
+        return;
+    }
+    if (!server.isPasswordAccepted(message.params[0])) {
+        client.queue(
+            numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
+        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #10)
+        return;
+    }
+    client.setPasswordOk();
 }
 
 // lookup table
@@ -53,6 +76,7 @@ static const Command commands[] = {
     {"JOIN", handleJoin},
     {"NICK", handleNick},
     {"PING", handlePing},
+    {"PASS", handlePass},
 };
 
 // finds the right command in the lookup table and calls its handler
@@ -69,6 +93,6 @@ void handleLine(Server& server, Client& client, const std::string& line) {
         }
     }
     // command is not in the lookup table
-    client.queue(
-        numericReply(client, "421", message.command + " :Unknown command"));
+    client.queue(numericReply(client, ERR_UNKNOWNCOMMAND,
+                              message.command + " " ERR_UNKNOWNCOMMAND_MSG));
 }
