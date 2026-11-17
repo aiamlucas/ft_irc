@@ -34,6 +34,9 @@ public:
     const std::string& getTopic() const;
     const std::set<int>& getMembers() const;
 
+    // set topic
+    void setTopic(const std::string& topic);
+
     // Operators
     void addOperator(int fd);     // +o
     void removeOperator(int fd);  // -o
@@ -47,9 +50,18 @@ public:
 
     // Modes
     bool isInviteOnly() const;
-    void setInviteOnly();
+    void setInviteOnly(bool value);
+    bool isTopicRestricted() const;
+    void setTopicRestricted(bool value);
+    const std::string& getKey() const;
+    void setKey(const std::string& key);
+    size_t getLimit() const;
+    void setLimit(size_t limit);
     // - void broadcast()  --> send a broadcast (message for everyone) for the
     // people in the channel
+
+    // additional helper functions
+    bool isEmpty() const;
 };
 
 std::ostream& operator<<(std::ostream& os, const Channel& other);

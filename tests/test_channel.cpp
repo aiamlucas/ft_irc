@@ -30,6 +30,18 @@ static void expectEqual(size_t actual, size_t expected, const std::string& testN
     }
 }
 
+// Stringlar uchun yangi funksiya
+static void expectString(const std::string& actual, const std::string& expected, const std::string& testName) {
+    g_total++;
+    if (actual == expected) {
+        std::cout << CL_GREEN << "OK: " << RESET << testName << std::endl;
+    } else {
+        g_failed++;
+        std::cerr << CL_RED << "FAIL: " << RESET << testName 
+                  << " (expected '" << expected << "', got '" << actual << "')" << std::endl;
+    }
+}
+
 int main() {
     std::cout << "--- Testing Channel ---" << std::endl;
     Channel chan("#test");
@@ -55,6 +67,34 @@ int main() {
     // Test 5: First member (operator) leaves, channel becomes empty
     chan.part(4);
     expectEqual(chan.getMembers().size(), 0, "Channel is empty after last member leaves");
+
+        // --- Modes ---
+    Channel modes("#modes");
+    
+    // Invite Only (+i)
+    expectBool(modes.isInviteOnly(), false, "InviteOnly is false by default");
+    modes.setInviteOnly(true);
+    expectBool(modes.isInviteOnly(), true, "InviteOnly is true after setter");
+
+    // Topic Restricted (+t)
+    expectBool(modes.isTopicRestricted(), false, "TopicRestricted is false by default");
+    modes.setTopicRestricted(true);
+    expectBool(modes.isTopicRestricted(), true, "TopicRestricted is true after setter");
+
+    // Key (+k)
+    expectString(modes.getKey(), "", "Key is empty by default");
+    modes.setKey("secret");
+    expectString(modes.getKey(), "secret", "Key is set to 'secret'");
+
+    // Limit (+l)
+    expectEqual(modes.getLimit(), 0, "Limit is 0 by default");
+    modes.setLimit(10);
+    expectEqual(modes.getLimit(), 10, "Limit is set to 10");
+
+    // --- Topic ---
+    expectString(modes.getTopic(), "", "Topic is empty by default");
+    modes.setTopic("Welcome to #modes");
+    expectString(modes.getTopic(), "Welcome to #modes", "Topic is updated");
 
     std::cout << "\n" << (g_total - g_failed) << "/" << g_total << " tests passed" << std::endl;
 
