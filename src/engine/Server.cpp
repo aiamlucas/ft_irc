@@ -16,7 +16,9 @@
 
 /*
 Next :
-- Function to remove clients from everything (already done by Lucas ?)
+- send the _outBuffer to the socket of the client and to remove the bytes that
+                were already sent. Follow to do list in Lucas notes (Issue #27)
+
 - Switch SERVER_RUNNING to false when signal received,
         to quit the program properly
 
@@ -185,11 +187,26 @@ string Server::convClientIP(const in_addr rawClientIP) {
 }
 
 void Server::parsePollfds_n_receive() {
+    std::map<int, Client>::iterator currentClientInstance;
+
     for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
          it != _pollfdParty.end(); it++) {
+        // Find current instance to check its hasOutput() return
+        if ((currentClientInstance = findCurrentClientInstance((*it).fd)) ==
+            _clientsParty.end())
+            continue;
+        // To check if Client removed at the end of the loop
         size_t vecSiz = _pollfdParty.size();
         if ((*it).fd == _listeningSocketFD) continue;
+        // POLLIN = There is data to read
         if ((*it).revents & POLLIN) it = receive_n_sendToParsing((*it).fd, it);
+        // POLLOUT = Writing now will not block
+        else if ((*currentClientInstance).second.hasOutput() &&
+                 ((*it).revents & POLLOUT))
+            it = sendOutBuffer((*it).fd, it);
+        // if using more macros than POLLIN & POLLOUT,
+        // add them to setUpNewSocket() ?
+        // TEST : try to remove POLLOUT after outBuffer functional
         // POLLERR = Error condition
         // POLLHUP = Hung up (Full list in poll.h)
         else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) {
@@ -200,6 +217,26 @@ void Server::parsePollfds_n_receive() {
         }
         if (vecSiz != _pollfdParty.size()) it--;
     }
+}
+
+//  The missing part is to send the _outBuffer to the socket of the client
+//  and to remove the bytes that were already sent.
+std::vector<pollfd>::iterator Server::sendOutBuffer(
+    int ClientSocket, std::vector<pollfd>::iterator currentPos) {
+    /*
+    - write the _outBuffer into socket
+    - send() may send only part of the buffer: remove only the bytes that
+    were sent from _outBuffer with eraseOutBuffer(n_bytes), and keep the rest
+    for the next time
+    - when the buffer is empty, there is nothing more to send
+    */
+
+    /*
+        TO DO :
+    n = send(fd, début du carnet, taille du carnet, 0)
+    si n > 0 : eraseOutBuffer(n)        (le reste attend le prochain tour)
+    si le carnet est maintenant vide : éteindre POLLOUT
+    */
 }
 
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
@@ -235,10 +272,14 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
         return (removeClient(ClientSocket));
     }
 
-    std::map<int, Client>::iterator currentClientInstance =
-        _clientsParty.find(ClientSocket);
-    // Client not found (edge case, low probability) :
-    if (currentClientInstance == _clientsParty.end()) return currentPos;
+    // std::map<int, Client>::iterator currentClientInstance =
+    //     _clientsParty.find(ClientSocket);
+    // // Client not found (edge case, low probability) :
+    // if (currentClientInstance == _clientsParty.end()) return currentPos;
+    std::map<int, Client>::iterator currentClientInstance;
+    if ((currentClientInstance = findCurrentClientInstance(ClientSocket)) ==
+        _clientsParty.end())
+        return currentPos;
 
     string& clientInBuffer = (*currentClientInstance).second.getInBuffer();
     // Put the bits received in client inBuffer
@@ -262,6 +303,16 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     }
 
     return currentPos;
+}
+
+std::map<int, Client>::iterator Server::findCurrentClientInstance(
+    int ClientSocket) {
+    std::map<int, Client>::iterator currentClientInstance =
+        _clientsParty.find(ClientSocket);
+    // Client not found (edge case, low probability) :
+    if (currentClientInstance == _clientsParty.end())
+        return _clientsParty.end();
+    return currentClientInstance;
 }
 
 void Server::check_n_sendString(
@@ -308,7 +359,7 @@ void Server::setUpNewSocket(int socketFDToAdd) {
     // = What is expected from this pollfd
     // Check full list in man poll() or poll.h
     // If many needed, separate with a pipe sign
-    NewSocket.events = POLLIN;
+    NewSocket.events = POLLIN | POLLOUT;
 
     _pollfdParty.push_back(NewSocket);
 }
