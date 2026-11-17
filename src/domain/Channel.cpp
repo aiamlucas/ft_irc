@@ -18,6 +18,11 @@ const std::string& Channel::getTopic() const { return _topic; }
 
 const std::set<int>& Channel::getMembers() const { return _members; }
 
+// set topic
+void Channel::setTopic(const std::string& topic) {
+	_topic = topic;
+}
+
 // Membership functions
 bool Channel::isMember(int fd) const {
 	if (_members.find(fd) != _members.end()) {
@@ -68,8 +73,37 @@ void Channel::removeOperator(int fd) {
 bool Channel::isInviteOnly() const {
 	return _inviteOnly;
 }
-void Channel::setInviteOnly() {
-	_inviteOnly = true;
+void Channel::setInviteOnly(bool value) {
+	_inviteOnly = value;
+}
+
+bool Channel::isTopicRestricted() const {
+	return _topicRestricted;
+}
+
+void Channel::setTopicRestricted(bool value) {
+	_topicRestricted = value;
+}
+
+const std::string& Channel::getKey() const {
+	return _key;
+}
+
+void Channel::setKey(const std::string& key) {
+	_key = key;
+}
+
+size_t Channel::getLimit() const {
+	return _limit;
+}
+
+void Channel::setLimit(size_t limit) {
+	_limit = limit;
+}
+
+// additional helper functions
+bool Channel::isEmpty() const {
+	return _members.empty();
 }
 
 std::ostream& operator<<(std::ostream& os, const Channel& other) {
