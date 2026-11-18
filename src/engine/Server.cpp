@@ -199,14 +199,15 @@ void Server::parsePollfds_n_receive() {
         size_t vecSiz = _pollfdParty.size();
         if ((*it).fd == _listeningSocketFD) continue;
         // POLLIN = There is data to read
-        if ((*it).revents & POLLIN) it = receive_n_sendToParsing((*it).fd, it);
-        // POLLOUT = Writing now will not block
-        else if ((*currentClientInstance).second.hasOutput() &&
-                 ((*it).revents & POLLOUT))
-            it = sendOutBuffer((*it).fd, it);
+        if ((*it).revents & POLLIN) {
+            it = receive_n_sendToParsing((*it).fd, it);
+            if ((*currentClientInstance).second.hasOutput()) {
+                // Is the return necessary here ?
+                it = sendOutBuffer((*it).fd, it, currentClientInstance);
+            }
+        }
         // if using more macros than POLLIN & POLLOUT,
         // add them to setUpNewSocket() ?
-        // TEST : try to remove POLLOUT after outBuffer functional
         // POLLERR = Error condition
         // POLLHUP = Hung up (Full list in poll.h)
         else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) {
@@ -222,21 +223,38 @@ void Server::parsePollfds_n_receive() {
 //  The missing part is to send the _outBuffer to the socket of the client
 //  and to remove the bytes that were already sent.
 std::vector<pollfd>::iterator Server::sendOutBuffer(
-    int ClientSocket, std::vector<pollfd>::iterator currentPos) {
-    /*
-    - write the _outBuffer into socket
-    - send() may send only part of the buffer: remove only the bytes that
-    were sent from _outBuffer with eraseOutBuffer(n_bytes), and keep the rest
-    for the next time
-    - when the buffer is empty, there is nothing more to send
-    */
-
+    int ClientSocket, std::vector<pollfd>::iterator currentPos,
+    std::map<int, Client>::iterator currentClientInstance) {
     /*
         TO DO :
-    n = send(fd, début du carnet, taille du carnet, 0)
-    si n > 0 : eraseOutBuffer(n)        (le reste attend le prochain tour)
-    si le carnet est maintenant vide : éteindre POLLOUT
-    */
+                n = send(fd, début du carnet, taille du carnet, 0)
+                si n > 0 : eraseOutBuffer(n)        (le reste attend le prochain
+       tour) si le carnet est maintenant vide : éteindre POLLOUT Rappelle-toi
+       les interrupteurs : events |= POLLOUT allume, et pour éteindre il faut &=
+       avec le complément (~POLLOUT).
+                */
+    // Switch POLLOUT on (Not sure, to test)
+    (*currentPos).events |= POLLOUT;
+    const std::string& outBuff = (*currentClientInstance).second.getOutBuffer();
+    size_t sizeToSend = outBuff.size();
+    // last arg from send = flag. Check in man if one could be useful
+    size_t bytesSent = send(ClientSocket, outBuff.c_str(), sizeToSend, 0);
+    if (bytesSent < 0) {
+        cerr << CL_RED
+             << "Issue while sending outBuffer to Client : " << strerror(errno)
+             << RESET << endl;
+    } else if (bytesSent != sizeToSend) {
+        cerr << CL_RED << "Bytes missing while sending outBuffer to Client"
+             << RESET << endl;
+        // What to do ? Erase the chars supposed to be sent ?
+    } else {
+        // Success
+        (*currentClientInstance).second.eraseOutBuffer(bytesSent);
+        // Switch off POLLOUT
+        (*currentPos).events &= ~POLLOUT;
+    }
+    // Is the return necessary ? Or can the function be void ?
+    return currentPos;
 }
 
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
@@ -359,7 +377,8 @@ void Server::setUpNewSocket(int socketFDToAdd) {
     // = What is expected from this pollfd
     // Check full list in man poll() or poll.h
     // If many needed, separate with a pipe sign
-    NewSocket.events = POLLIN | POLLOUT;
+    // POLLOUT not added here because it shouldn't be on the whole time
+    NewSocket.events = POLLIN;
 
     _pollfdParty.push_back(NewSocket);
 }

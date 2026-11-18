@@ -43,7 +43,8 @@ public:
     void setUpNewSocket(int socketFDToAdd);
     void parsePollfds_n_receive();
     std::vector<pollfd>::iterator sendOutBuffer(
-        int ClientSocket, std::vector<pollfd>::iterator currentPos);
+        int ClientSocket, std::vector<pollfd>::iterator currentPos,
+        std::map<int, Client>::iterator currentClientInstance);
     std::vector<pollfd>::iterator receive_n_sendToParsing(
         int ClientSocket, std::vector<pollfd>::iterator currentPos);
     std::map<int, Client>::iterator findCurrentClientInstance(int ClientSocket);
