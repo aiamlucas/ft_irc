@@ -22,6 +22,8 @@ Next :
 - Switch SERVER_RUNNING to false when signal received,
         to quit the program properly
 
+- Sigaction SERVER_RUNNING
+
 TEST COMMANDS FROM TERMINAL :
 echo "Salut Poulette !" | nc 127.0.0.1 55555
 echo "Salut Poulette !" | nc -C 127.0.0.1 55555
@@ -131,6 +133,7 @@ void Server::pollAndAccept() {
                 acceptNewClient();
             }
         }
+        // Rethink function wording (camel case only)
         parsePollfds_n_receive();
     }
 }
@@ -236,10 +239,10 @@ std::vector<pollfd>::iterator Server::sendOutBuffer(
     // Switch POLLOUT on (Not sure, to test)
     (*currentPos).events |= POLLOUT;
     const std::string& outBuff = (*currentClientInstance).second.getOutBuffer();
-    size_t sizeToSend = outBuff.size();
-    // last arg from send = flag. Check in man if one could be useful
-    size_t bytesSent = send(ClientSocket, outBuff.c_str(), sizeToSend, 0);
-    if (bytesSent < 0) {
+    int sizeToSend = outBuff.size();
+
+    int bytesSent = send(ClientSocket, outBuff.c_str(), sizeToSend, 0);
+    if (bytesSent == -1) {
         cerr << CL_RED
              << "Issue while sending outBuffer to Client : " << strerror(errno)
              << RESET << endl;
