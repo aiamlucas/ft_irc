@@ -15,13 +15,20 @@
 #include "colors.hpp"
 
 /*
-In Progress :
-- buffer with what's following \r\n
-
 Next :
-- Function to remove clients from everything (already done by Lucas ?)
+- send the _outBuffer to the socket of the client and to remove the bytes that
+                were already sent. Follow to do list in Lucas notes (Issue #27)
 
-TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
+- Switch SERVER_RUNNING to false when signal received,
+        to quit the program properly
+
+- Sigaction SERVER_RUNNING
+
+TEST COMMANDS FROM TERMINAL :
+echo "Salut Poulette !" | nc 127.0.0.1 55555
+echo "Salut Poulette !" | nc -C 127.0.0.1 55555
+echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
+nc 127.0.0.1 55555 < file.txt
 */
 
 #define MAX_INBUFFER_SIZE 510
@@ -107,8 +114,6 @@ bool Server::listenSetUp() {
 void Server::pollAndAccept() {
     setUpNewSocket(_listeningSocketFD);
 
-    // [TO DO] switch to false when signal received,
-    // to quit the program properly
     while (SERVER_RUNNING) {
         // Man poll : "negative value in timeout means an infinite timeout"
         if (poll(&_pollfdParty[0], static_cast<nfds_t>(_pollfdParty.size()),
@@ -128,6 +133,7 @@ void Server::pollAndAccept() {
                 acceptNewClient();
             }
         }
+        // Rethink function wording (camel case only)
         parsePollfds_n_receive();
     }
 }
@@ -184,11 +190,27 @@ string Server::convClientIP(const in_addr rawClientIP) {
 }
 
 void Server::parsePollfds_n_receive() {
+    std::map<int, Client>::iterator currentClientInstance;
+
     for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
          it != _pollfdParty.end(); it++) {
+        // Find current instance to check its hasOutput() return
+        if ((currentClientInstance = findCurrentClientInstance((*it).fd)) ==
+            _clientsParty.end())
+            continue;
+        // To check if Client removed at the end of the loop
         size_t vecSiz = _pollfdParty.size();
         if ((*it).fd == _listeningSocketFD) continue;
-        if ((*it).revents & POLLIN) it = receive_n_sendToParsing((*it).fd, it);
+        // POLLIN = There is data to read
+        if ((*it).revents & POLLIN) {
+            it = receive_n_sendToParsing((*it).fd, it);
+            if ((*currentClientInstance).second.hasOutput()) {
+                // Is the return necessary here ?
+                it = sendOutBuffer((*it).fd, it, currentClientInstance);
+            }
+        }
+        // if using more macros than POLLIN & POLLOUT,
+        // add them to setUpNewSocket() ?
         // POLLERR = Error condition
         // POLLHUP = Hung up (Full list in poll.h)
         else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) {
@@ -199,6 +221,43 @@ void Server::parsePollfds_n_receive() {
         }
         if (vecSiz != _pollfdParty.size()) it--;
     }
+}
+
+//  The missing part is to send the _outBuffer to the socket of the client
+//  and to remove the bytes that were already sent.
+std::vector<pollfd>::iterator Server::sendOutBuffer(
+    int ClientSocket, std::vector<pollfd>::iterator currentPos,
+    std::map<int, Client>::iterator currentClientInstance) {
+    /*
+        TO DO :
+                n = send(fd, début du carnet, taille du carnet, 0)
+                si n > 0 : eraseOutBuffer(n)        (le reste attend le prochain
+       tour) si le carnet est maintenant vide : éteindre POLLOUT Rappelle-toi
+       les interrupteurs : events |= POLLOUT allume, et pour éteindre il faut &=
+       avec le complément (~POLLOUT).
+                */
+    // Switch POLLOUT on (Not sure, to test)
+    (*currentPos).events |= POLLOUT;
+    const std::string& outBuff = (*currentClientInstance).second.getOutBuffer();
+    int sizeToSend = outBuff.size();
+
+    int bytesSent = send(ClientSocket, outBuff.c_str(), sizeToSend, 0);
+    if (bytesSent == -1) {
+        cerr << CL_RED
+             << "Issue while sending outBuffer to Client : " << strerror(errno)
+             << RESET << endl;
+    } else if (bytesSent != sizeToSend) {
+        cerr << CL_RED << "Bytes missing while sending outBuffer to Client"
+             << RESET << endl;
+        // What to do ? Erase the chars supposed to be sent ?
+    } else {
+        // Success
+        (*currentClientInstance).second.eraseOutBuffer(bytesSent);
+        // Switch off POLLOUT
+        (*currentPos).events &= ~POLLOUT;
+    }
+    // Is the return necessary ? Or can the function be void ?
+    return currentPos;
 }
 
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
@@ -229,24 +288,26 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << strerror(errno) << RESET << endl;
         return currentPos;
     } else if (bytesReceived == 0) {
-        cout << CL_YELLOW << "Closing FD\n --------" << RESET << endl;
-        // Erase returns() an iterator to the following element
-        _clientsParty.erase(ClientSocket);
-        close(ClientSocket);
-        return (_pollfdParty.erase(currentPos));
+        cout << CL_YELLOW << "Bye Bye fd " << ClientSocket << " !\n"
+             << RESET << endl;
+        return (removeClient(ClientSocket));
     }
 
-    std::map<int, Client>::iterator currentClientInstance =
-        _clientsParty.find(ClientSocket);
-    // Client not found :
-    if (currentClientInstance == _clientsParty.end()) return currentPos;
+    // std::map<int, Client>::iterator currentClientInstance =
+    //     _clientsParty.find(ClientSocket);
+    // // Client not found (edge case, low probability) :
+    // if (currentClientInstance == _clientsParty.end()) return currentPos;
+    std::map<int, Client>::iterator currentClientInstance;
+    if ((currentClientInstance = findCurrentClientInstance(ClientSocket)) ==
+        _clientsParty.end())
+        return currentPos;
 
     string& clientInBuffer = (*currentClientInstance).second.getInBuffer();
     // Put the bits received in client inBuffer
     clientInBuffer.append(buffer, bytesReceived);
 
     cout << bytesReceived << " bytes received"
-         << " from FD " << ClientSocket << "\n --------------\n"
+         << " from FD " << ClientSocket << "\n\n"
          << RESET;
 
     if (clientInBuffer.find('\n' /*, sizeof(clientInBuffer)*/) ==
@@ -256,8 +317,8 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << RESET;
     } else {
         cout << CL_BLUE_DIM
-             << "Line return found - String might good to be split and handled "
-                "to parsing - Checking ...\n"
+             << "\tLine return found - Checking if string good to go to "
+                "parsing ...\n"
              << RESET;
         check_n_sendString(currentClientInstance, clientInBuffer);
     }
@@ -265,12 +326,19 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     return currentPos;
 }
 
+std::map<int, Client>::iterator Server::findCurrentClientInstance(
+    int ClientSocket) {
+    std::map<int, Client>::iterator currentClientInstance =
+        _clientsParty.find(ClientSocket);
+    // Client not found (edge case, low probability) :
+    if (currentClientInstance == _clientsParty.end())
+        return _clientsParty.end();
+    return currentClientInstance;
+}
+
 void Server::check_n_sendString(
     std::map<int, Client>::iterator currentClientInstance,
     string& clientInBuffer) {
-    // INPUT TESTED SUCCESSFULLY :
-    // echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
-
     while (clientInBuffer.find_first_of('\n') != string::npos) {
         // save iterator/position for \n
         size_t LF_index = clientInBuffer.find_first_of('\n');
@@ -290,7 +358,7 @@ void Server::check_n_sendString(
             handleLine(*this, (*currentClientInstance).second, tmp);
             // Clear client inBuffer for the next command
             tmp.clear();
-            std::cout << "\t" CL_GREEN_DIM << "Client outBuffer : ["
+            std::cout << "\n" CL_GREEN_DIM << "Client outBuffer : ["
                       << (*currentClientInstance).second.getOutBuffer() << "]\n"
                       << RESET;
         }
@@ -312,11 +380,26 @@ void Server::setUpNewSocket(int socketFDToAdd) {
     // = What is expected from this pollfd
     // Check full list in man poll() or poll.h
     // If many needed, separate with a pipe sign
+    // POLLOUT not added here because it shouldn't be on the whole time
     NewSocket.events = POLLIN;
-    // No need - Will be filled up automatically later.
-    // NewSocket.revents = ;
 
     _pollfdParty.push_back(NewSocket);
+}
+
+std::vector<pollfd>::iterator Server::removeClient(int ClientSocket) {
+    std::vector<pollfd>::iterator nextClientSocket;
+    // From struct _clientsParty
+    _clientsParty.erase(ClientSocket);
+    // From struct _pollfdParty
+    for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
+         it != _pollfdParty.end(); it++) {
+        if ((*it).fd == ClientSocket) {
+            nextClientSocket = _pollfdParty.erase(it);
+            break;
+        }
+    }
+    close(ClientSocket);
+    return nextClientSocket;
 }
 
 void Server::closeBeforeExit() {
