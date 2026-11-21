@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "Client.hpp"
+#include "ServerState.hpp"
 
 #define SYSCALL_ERROR -1
 #define SERVER_RUNNING true
@@ -28,6 +29,8 @@ private:
     std::vector<pollfd> _pollfdParty;
     // int is FD - Auto sort in alpha order
     std::map<int, Client> _clientsParty;
+    // server state
+    ServerState _state;
 
 public:
     Server(int port, const std::string& password);
@@ -49,6 +52,9 @@ public:
         std::string& clientInBuffer);
     // TO DO - Close all opened sockets + FD before leaving
     void closeBeforeExit();
+    // ServerState functions
+    ServerState& getState();
+    void queueMessage(int fd, const std::string& msg);
 };
 
 #endif

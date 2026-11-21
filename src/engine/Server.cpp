@@ -323,3 +323,15 @@ void Server::closeBeforeExit() {
     close(_listeningSocketFD);
     // Close all opened sockets & FDs
 }
+
+// Serverstate functions
+ServerState& Server::getState() {
+    return _state;
+}
+
+void Server::queueMessage(int fd, const std::string& msg) {
+    std::map<int, Client>::iterator it = _clientsParty.find(fd);
+    if (it != _clientsParty.end()) {
+        it->second.queue(msg);
+    }
+}
