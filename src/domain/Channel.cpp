@@ -19,91 +19,83 @@ const std::string& Channel::getTopic() const { return _topic; }
 const std::set<int>& Channel::getMembers() const { return _members; }
 
 // set topic
-void Channel::setTopic(const std::string& topic) {
-	_topic = topic;
-}
+void Channel::setTopic(const std::string& topic) { _topic = topic; }
 
 // Membership functions
 bool Channel::isMember(int fd) const {
-	if (_members.find(fd) != _members.end()) {
-		return true;
-	}
-	return false;
+    if (_members.find(fd) != _members.end()) {
+        return true;
+    }
+    return false;
 }
 void Channel::join(int fd) {
-	if (isMember(fd)) {
-		return;
-	}
-	_members.insert(fd);
-	if (_members.size() == 1) {
-		_operators.insert(fd);
-	}
+    if (isMember(fd)) {
+        return;
+    }
+    _members.insert(fd);
+    if (_members.size() == 1) {
+        _operators.insert(fd);
+    }
 }
 void Channel::part(int fd) {
-	if (isOperator(fd)) {
-		removeOperator(fd);
-	}
-	_members.erase(fd);
+    if (isOperator(fd)) {
+        removeOperator(fd);
+    }
+    _members.erase(fd);
 }
 void Channel::kick(int fd) {
-	if (isOperator(fd)) {
-		removeOperator(fd);
-	}
-	_members.erase(fd);
+    if (isOperator(fd)) {
+        removeOperator(fd);
+    }
+    _members.erase(fd);
 }
 
 // Operators
 bool Channel::isOperator(int fd) const {
-	if (_operators.find(fd) != _operators.end()) {
-		return true;
-	}
-	return false;
+    if (_operators.find(fd) != _operators.end()) {
+        return true;
+    }
+    return false;
 }
 void Channel::addOperator(int fd) {
-	if (!isMember(fd) || isOperator(fd)) {
-		return;
-	}
-	_operators.insert(fd);
+    if (!isMember(fd) || isOperator(fd)) {
+        return;
+    }
+    _operators.insert(fd);
 }
-void Channel::removeOperator(int fd) {
-	_operators.erase(fd);
-}
+void Channel::removeOperator(int fd) { _operators.erase(fd); }
 
 // Modes
-bool Channel::isInviteOnly() const {
-	return _inviteOnly;
-}
-void Channel::setInviteOnly(bool value) {
-	_inviteOnly = value;
-}
+bool Channel::isInviteOnly() const { return _inviteOnly; }
+void Channel::setInviteOnly(bool value) { _inviteOnly = value; }
 
-bool Channel::isTopicRestricted() const {
-	return _topicRestricted;
-}
+bool Channel::isTopicRestricted() const { return _topicRestricted; }
 
-void Channel::setTopicRestricted(bool value) {
-	_topicRestricted = value;
-}
+void Channel::setTopicRestricted(bool value) { _topicRestricted = value; }
 
-const std::string& Channel::getKey() const {
-	return _key;
-}
+const std::string& Channel::getKey() const { return _key; }
 
-void Channel::setKey(const std::string& key) {
-	_key = key;
-}
+void Channel::setKey(const std::string& key) { _key = key; }
 
-size_t Channel::getLimit() const {
-	return _limit;
-}
+size_t Channel::getLimit() const { return _limit; }
 
-void Channel::setLimit(size_t limit) {
-	_limit = limit;
-}
+void Channel::setLimit(size_t limit) { _limit = limit; }
 
 // additional helper functions
-bool Channel::isEmpty() const {
-	return _members.empty();
+bool Channel::isEmpty() const { return _members.empty(); }
+
+// Broadcast targets
+// ++it — "avval oshir, keyin ishlat".
+// it++ — "avval eski qiymatni ishlat, keyin oshir"
+std::vector<int> Channel::getBroadcastTargets(int exceptFd) const {
+    std::vector<int> targets;
+    for (std::set<int>::const_iterator it = _members.begin();
+         it != _members.end(); ++it) {
+        if (*it != exceptFd) {
+            targets.push_back(*it);
+        }
+    }
+    return targets;
 }
 
 std::ostream& operator<<(std::ostream& os, const Channel& other) {
