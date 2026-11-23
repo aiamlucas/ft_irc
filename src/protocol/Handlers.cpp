@@ -71,12 +71,26 @@ static void handlePass(Server& server, Client& client, const Message& message) {
     client.setPasswordOk();
 }
 
+// message should be: USER <username> <mode> <unused> :<realname>
+// EX: USER ssin 0 * :Sara Sin
+static void handleUser(Server&, Client& client, const Message& message) {
+    if (message.params.size() < 4) {
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "USER " ERR_NEEDMOREPARAMS_MSG));
+        return;
+    }
+    if (client.isRegistered()) {
+        client.queue(numericReply(client, ERR_ALREADYREGISTRED,
+                                  ERR_ALREADYREGISTRED_MSG));
+        return;
+    }
+    client.setUsername(message.params[0]);
+}
+
 // lookup table
 static const Command commands[] = {
-    {"JOIN", handleJoin},
-    {"NICK", handleNick},
-    {"PING", handlePing},
-    {"PASS", handlePass},
+    {"JOIN", handleJoin}, {"NICK", handleNick}, {"PING", handlePing},
+    {"PASS", handlePass}, {"USER", handleUser},
 };
 
 // finds the right command in the lookup table and calls its handler

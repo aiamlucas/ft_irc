@@ -48,6 +48,18 @@ static void expectPasswordOk(Client& client, bool expected) {
               << " got: " << client.isPasswordOk() << RESET << std::endl;
 }
 
+static void expectUsername(const Client& client, const std::string& expected) {
+    g_total++;
+    if (client.getUsername() == expected) {
+        std::cout << BOLD << "Username:: " << expected << RESET << std::endl;
+        return;
+    }
+    g_failed++;
+    std::cerr << CL_RED << "FAIL: " << RESET BOLD << "Username:\n"
+              << " expected: " << expected << "\n"
+              << " got: " << client.getUsername() << RESET << std::endl;
+}
+
 // commands partly tested: NICK and JOIN (only the missing parameter)
 // TODO: test NICK and JOIN when they are fully implemented
 int main() {
@@ -144,6 +156,32 @@ int main() {
         line = "PASS poulettepass";
         expected = ":oipoulette 462 ssin :You may not reregister\r\n";
         expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 12: USER without enough parameters (461)");
+        Client client(4);
+        line = "USER ssin";
+        expected = ":oipoulette 461 * USER :Not enough parameters\r\n";
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 13: USER when the client is registered");
+        Client client(4);
+        client.setPasswordOk();
+        client.setNickname("ssin");
+        client.setUsername("ssin");
+        line = "USER ssin 0 * :Sara Sin";
+        expected = ":oipoulette 462 ssin :You may not reregister\r\n";
+        expectHandleLine(client, line, expected);
+        expectUsername(client, "ssin");
+    }
+    {
+        printTest("Test 14: USER with all parameters (no reply, username set)");
+        Client client(4);
+        line = "USER ssin 0 * :Sara Sin";
+        expected = "";
+        expectHandleLine(client, line, expected);
+        expectUsername(client, "ssin");
     }
 
     std::cout << "\n"
