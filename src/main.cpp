@@ -22,3 +22,8 @@ int main(int argc, char* argv[]) {
     OiPoulette.closeBeforeExit();
     return EXIT_SUCCESS;
 }
+
+void sigHandler(sig_atomic_t server_running)
+{
+    
+}

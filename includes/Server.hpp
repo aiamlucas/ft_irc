@@ -7,11 +7,13 @@
 #include <map>
 #include <string>  // std::string_password
 #include <vector>
+#include <signal.h>
 
 #include "Client.hpp"
 
 #define SYSCALL_ERROR -1
-#define SERVER_RUNNING true
+#define volatile sig_atomic_t server_running true
+// #define SERVER_RUNNING true
 
 class Server {
 private:

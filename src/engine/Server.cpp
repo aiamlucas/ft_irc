@@ -16,9 +16,6 @@
 
 /*
 Next :
-- send the _outBuffer to the socket of the client and to remove the bytes that
-                were already sent. Follow to do list in Lucas notes (Issue #27)
-
 - Switch SERVER_RUNNING to false when signal received,
         to quit the program properly
 
