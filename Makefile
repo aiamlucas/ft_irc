@@ -12,6 +12,7 @@ SRC     += src/Utils.cpp
 SRC     += src/engine/Server.cpp
 SRC     += src/engine/Client.cpp
 SRC     += src/domain/Channel.cpp
+SRC		+= src/domain/ServerState.cpp
 SRC     += src/protocol/Parser.cpp
 SRC     += src/protocol/Replies.cpp
 SRC     += src/protocol/Handlers.cpp

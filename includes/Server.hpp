@@ -42,9 +42,16 @@ public:
     bool isPasswordAccepted(const std::string& password) const;
     void setUpNewSocket(int socketFDToAdd);
     void parsePollfds_n_receive();
+    std::vector<pollfd>::iterator sendOutBuffer(
+        int ClientSocket, std::vector<pollfd>::iterator currentPos,
+        std::map<int, Client>::iterator currentClientInstance);
     std::vector<pollfd>::iterator receive_n_sendToParsing(
         int ClientSocket, std::vector<pollfd>::iterator currentPos);
-    void checkString(std::string& clientInBuffer);
+    std::map<int, Client>::iterator findCurrentClientInstance(int ClientSocket);
+    void check_n_sendString(
+        std::map<int, Client>::iterator currentClientInstance,
+        std::string& clientInBuffer);
+    std::vector<pollfd>::iterator removeClient(int ClientSocket);
     // TO DO - Close all opened sockets + FD before leaving
     void closeBeforeExit();
 };

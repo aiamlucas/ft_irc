@@ -11,15 +11,30 @@
 #include <cerrno>  // errno()
 #include <iostream>
 
+#include "Handlers.hpp"
 #include "colors.hpp"
 
 /*
-Next : function to remove clients from everything
-+ buffer with what's following \r\n - No clue where to put it because
-the buffer is common to all clients. Add a temp buffer in client ?
+Next :
+- send the _outBuffer to the socket of the client and to remove the bytes that
+                were already sent. Follow to do list in Lucas notes (Issue #27)
+
+- Switch SERVER_RUNNING to false when signal received,
+        to quit the program properly
+
+- Sigaction SERVER_RUNNING
+
+TEST COMMANDS FROM TERMINAL :
+echo "Salut Poulette !" | nc 127.0.0.1 55555
+echo "Salut Poulette !" | nc -C 127.0.0.1 55555
+echo "NICK X\r\nNICK Y\r\nNIC" | nc 127.0.0.1 55555
+nc 127.0.0.1 55555 < file.txt
 */
 
-#define MAX_BUFFER_SIZE 512
+#define MAX_INBUFFER_SIZE 510
+#define SEPARATOR                                                              \
+    "________________________________________________________________________" \
+    "\n"
 using std::cerr;
 using std::cout;
 using std::endl;
@@ -96,12 +111,9 @@ bool Server::listenSetUp() {
     return true;
 }
 
-// TEST COMMAND FROM TERMINAL : echo "Salut Poulette !" | nc 127.0.0.1 55555
 void Server::pollAndAccept() {
     setUpNewSocket(_listeningSocketFD);
 
-    // [TO DO] switch to false when signal received, to quit the program
-    // properly
     while (SERVER_RUNNING) {
         // Man poll : "negative value in timeout means an infinite timeout"
         if (poll(&_pollfdParty[0], static_cast<nfds_t>(_pollfdParty.size()),
@@ -121,6 +133,7 @@ void Server::pollAndAccept() {
                 acceptNewClient();
             }
         }
+        // Rethink function wording (camel case only)
         parsePollfds_n_receive();
     }
 }
@@ -163,8 +176,8 @@ void Server::acceptNewClient() {
 }
 
 string Server::convClientIP(const in_addr rawClientIP) {
-    // man inet_ntop() : The buffer must be at least INET_ADDRSTRLEN bytes
-    // long
+    // man inet_ntop() : The buffer must be at least
+    // INET_ADDRSTRLEN bytes long
     char buffer[INET_ADDRSTRLEN];
     if (!inet_ntop(AF_INET, &rawClientIP, buffer, INET_ADDRSTRLEN)) {
         cerr << CL_RED
@@ -177,13 +190,29 @@ string Server::convClientIP(const in_addr rawClientIP) {
 }
 
 void Server::parsePollfds_n_receive() {
+    std::map<int, Client>::iterator currentClientInstance;
+
     for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
          it != _pollfdParty.end(); it++) {
+        // Find current instance to check its hasOutput() return
+        if ((currentClientInstance = findCurrentClientInstance((*it).fd)) ==
+            _clientsParty.end())
+            continue;
+        // To check if Client removed at the end of the loop
         size_t vecSiz = _pollfdParty.size();
         if ((*it).fd == _listeningSocketFD) continue;
-        if ((*it).revents & POLLIN) it = receive_n_sendToParsing((*it).fd, it);
-        // POLLERR = Error condition	POLLHUP = Hung up (Full list in
-        // poll.h)
+        // POLLIN = There is data to read
+        if ((*it).revents & POLLIN) {
+            it = receive_n_sendToParsing((*it).fd, it);
+            if ((*currentClientInstance).second.hasOutput()) {
+                // Is the return necessary here ?
+                it = sendOutBuffer((*it).fd, it, currentClientInstance);
+            }
+        }
+        // if using more macros than POLLIN & POLLOUT,
+        // add them to setUpNewSocket() ?
+        // POLLERR = Error condition
+        // POLLHUP = Hung up (Full list in poll.h)
         else if (((*it).revents & POLLERR) || ((*it).revents & POLLHUP)) {
             cout << CL_RED_REVERT << "Debug - revents is not POLLIN : ["
                  << "]\n"
@@ -194,17 +223,56 @@ void Server::parsePollfds_n_receive() {
     }
 }
 
+//  The missing part is to send the _outBuffer to the socket of the client
+//  and to remove the bytes that were already sent.
+std::vector<pollfd>::iterator Server::sendOutBuffer(
+    int ClientSocket, std::vector<pollfd>::iterator currentPos,
+    std::map<int, Client>::iterator currentClientInstance) {
+    /*
+        TO DO :
+                n = send(fd, début du carnet, taille du carnet, 0)
+                si n > 0 : eraseOutBuffer(n)        (le reste attend le prochain
+       tour) si le carnet est maintenant vide : éteindre POLLOUT Rappelle-toi
+       les interrupteurs : events |= POLLOUT allume, et pour éteindre il faut &=
+       avec le complément (~POLLOUT).
+                */
+    // Switch POLLOUT on (Not sure, to test)
+    (*currentPos).events |= POLLOUT;
+    const std::string& outBuff = (*currentClientInstance).second.getOutBuffer();
+    int sizeToSend = outBuff.size();
+
+    int bytesSent = send(ClientSocket, outBuff.c_str(), sizeToSend, 0);
+    if (bytesSent == -1) {
+        cerr << CL_RED
+             << "Issue while sending outBuffer to Client : " << strerror(errno)
+             << RESET << endl;
+    } else if (bytesSent != sizeToSend) {
+        cerr << CL_RED << "Bytes missing while sending outBuffer to Client"
+             << RESET << endl;
+        // What to do ? Erase the chars supposed to be sent ?
+    } else {
+        // Success
+        (*currentClientInstance).second.eraseOutBuffer(bytesSent);
+        // Switch off POLLOUT
+        (*currentPos).events &= ~POLLOUT;
+    }
+    // Is the return necessary ? Or can the function be void ?
+    return currentPos;
+}
+
 std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     int ClientSocket, std::vector<pollfd>::iterator currentPos) {
-    cout << CL_GREEN_BOLD << "*** BYTES INCOMING ! ***\n" << RESET;
-    // !! A cmd can be splitted into many buffers
-    // TBC Can 2 cmds be in the same buffer ?
+    cout << CL_BRIGHT_PURPLE_BOLD << SEPARATOR
+         << "\t\t\t*** BYTES INCOMING ! ***\n"
+         << RESET;
 
     ssize_t bytesReceived = 0;
-    char buffer[MAX_BUFFER_SIZE] = {0};
-    // Flag MSG_DONTWAIT enables nonblocking operation but used fcntl()
-    // instead
-    bytesReceived = recv(ClientSocket, &buffer, MAX_BUFFER_SIZE, 0);
+    // Change size to INT_MAX ? More ? Less ? Change also for recv
+    char buffer[10000] = {0};
+    // Flag MSG_DONTWAIT enables nonblocking operation but
+    // used fcntl() instead
+    // Change arg 3 to buffer size (right above)
+    bytesReceived = recv(ClientSocket, &buffer, 10000, 0);
 
     // If client sends something else, it doesn't print because server is
     // waiting for a new connection - Fix that
@@ -214,26 +282,33 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
     // will set your grade to 0.
     {
         cerr << CL_BLUE
-             << "-1 bytes received - Nothing to read or issue ? "
+             << "revc() returned -1 : Nothing to read or issue ? "
                 "Investigate. "
                 "Tmp Debug Errno (forbidden - to remove) : "
              << strerror(errno) << RESET << endl;
         return currentPos;
     } else if (bytesReceived == 0) {
-        cout << CL_YELLOW << "Closing FD\n --------" << RESET << endl;
-        _clientsParty.erase(ClientSocket);
-        close(ClientSocket);
-        // Erase returns() an iterator to the following element
-        return (_pollfdParty.erase(currentPos));
+        cout << CL_YELLOW << "Bye Bye fd " << ClientSocket << " !\n"
+             << RESET << endl;
+        return (removeClient(ClientSocket));
     }
 
-    std::map<int, Client>::iterator SearchclientInBuffer =
-        _clientsParty.find(ClientSocket);
-    // TO DO : edge case if find returns end (very low prob but good
-    // practice)
-    string& clientInBuffer = (*SearchclientInBuffer).second.getInBuffer();
+    // std::map<int, Client>::iterator currentClientInstance =
+    //     _clientsParty.find(ClientSocket);
+    // // Client not found (edge case, low probability) :
+    // if (currentClientInstance == _clientsParty.end()) return currentPos;
+    std::map<int, Client>::iterator currentClientInstance;
+    if ((currentClientInstance = findCurrentClientInstance(ClientSocket)) ==
+        _clientsParty.end())
+        return currentPos;
 
+    string& clientInBuffer = (*currentClientInstance).second.getInBuffer();
+    // Put the bits received in client inBuffer
     clientInBuffer.append(buffer, bytesReceived);
+
+    cout << bytesReceived << " bytes received"
+         << " from FD " << ClientSocket << "\n\n"
+         << RESET;
 
     if (clientInBuffer.find('\n' /*, sizeof(clientInBuffer)*/) ==
         clientInBuffer.npos) {
@@ -241,53 +316,59 @@ std::vector<pollfd>::iterator Server::receive_n_sendToParsing(
              << "Command cropped (additional bytes incoming ...)\n"
              << RESET;
     } else {
-        // Check if chars after line return and store them in buffer ?
         cout << CL_BLUE_DIM
-             << "Line return found - String might good to be handled by "
-                "parsing - Checking ...\n"
+             << "\tLine return found - Checking if string good to go to "
+                "parsing ...\n"
              << RESET;
-        checkString(clientInBuffer);
+        check_n_sendString(currentClientInstance, clientInBuffer);
     }
-
-    cout << "Buffer content : -->" << string(buffer, bytesReceived) << "<-- ("
-         << bytesReceived << " bytes received)"
-         << " - Client inBuffer : [" << clientInBuffer << "] From FD "
-         << ClientSocket << "\n --------------\n";
 
     return currentPos;
 }
 
-/*
-NB / TODO : One read can contain several lines,
-or just a line
-or half of the next line (similar logic to the ft_getnextline)
-Skip empty lines
-*/
-void Server::checkString(string& clientInBuffer) {
-    if (clientInBuffer.size() > 510) {
-        cerr << CL_RED_BOLD
-             << "\t... Buffer is too long - Max 510 chars allowed\n\n"
-             << RESET;
-        clientInBuffer.erase();
-        return;
+std::map<int, Client>::iterator Server::findCurrentClientInstance(
+    int ClientSocket) {
+    std::map<int, Client>::iterator currentClientInstance =
+        _clientsParty.find(ClientSocket);
+    // Client not found (edge case, low probability) :
+    if (currentClientInstance == _clientsParty.end())
+        return _clientsParty.end();
+    return currentClientInstance;
+}
+
+void Server::check_n_sendString(
+    std::map<int, Client>::iterator currentClientInstance,
+    string& clientInBuffer) {
+    while (clientInBuffer.find_first_of('\n') != string::npos) {
+        // save iterator/position for \n
+        size_t LF_index = clientInBuffer.find_first_of('\n');
+        // '\n' will be removed here - Tmp has what we want to send
+        string tmp = clientInBuffer.substr(0, LF_index);
+        if (tmp.find('\r') != string::npos) {
+            tmp.erase(LF_index - 1);
+        }
+        if (tmp.size() > 510) {
+            cerr << CL_RED_BOLD << "Line too long\n" << RESET;
+        } else {
+            cout << CL_GREEN_BOLD
+                 << "\t... GOOD TO GO ! - Full line to be handled : [" << tmp
+                 << "]\n"
+                 << RESET;
+            // Handle to parsing
+            handleLine(*this, (*currentClientInstance).second, tmp);
+            // Clear client inBuffer for the next command
+            tmp.clear();
+            std::cout << "\n" CL_GREEN_DIM << "Client outBuffer : ["
+                      << (*currentClientInstance).second.getOutBuffer() << "]\n"
+                      << RESET;
+        }
+        // TO DO : When should I erase the outBuffer ?
+        // (*currentClientInstance).second.eraseOutBuffer(how many bytes ?);
+        // Clear temp for the next command
+        tmp.clear();
+        // Crop the buffer to keep what hasn't been sent yet
+        clientInBuffer.erase(0, LF_index + 1);
     }
-
-    // save iterator/position for \n and for \r
-    size_t CR = clientInBuffer.find_first_of('\r');
-    size_t LF = clientInBuffer.find_first_of('\n');
-
-    // Check if there is anything after the \r\n / \n
-    if (CR != string::npos) {
-        // Only remove \r\n, check if anything after, and store it in a
-        // buffer
-        clientInBuffer.erase(CR, 2);
-    } else if (LF != string::npos) {
-        // !! Only remove \n, check if anything after, and store it in a
-        // buffer
-        clientInBuffer.erase(LF);
-    }
-
-    cout << CL_GREEN_BOLD << "\t... GOOD TO GO !\n\n" << RESET;
 }
 
 // _listeningSocket is at position [0] or (_pollfdParty.begin())
@@ -299,11 +380,26 @@ void Server::setUpNewSocket(int socketFDToAdd) {
     // = What is expected from this pollfd
     // Check full list in man poll() or poll.h
     // If many needed, separate with a pipe sign
+    // POLLOUT not added here because it shouldn't be on the whole time
     NewSocket.events = POLLIN;
-    // No need - Will be filled up automatically later.
-    // NewSocket.revents = ;
 
     _pollfdParty.push_back(NewSocket);
+}
+
+std::vector<pollfd>::iterator Server::removeClient(int ClientSocket) {
+    std::vector<pollfd>::iterator nextClientSocket;
+    // From struct _clientsParty
+    _clientsParty.erase(ClientSocket);
+    // From struct _pollfdParty
+    for (std::vector<pollfd>::iterator it = _pollfdParty.begin();
+         it != _pollfdParty.end(); it++) {
+        if ((*it).fd == ClientSocket) {
+            nextClientSocket = _pollfdParty.erase(it);
+            break;
+        }
+    }
+    close(ClientSocket);
+    return nextClientSocket;
 }
 
 void Server::closeBeforeExit() {

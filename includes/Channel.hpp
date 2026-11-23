@@ -4,6 +4,7 @@
 #include <iostream>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "Client.hpp"
 
@@ -40,13 +41,15 @@ public:
     // Operators
     void addOperator(int fd);     // +o
     void removeOperator(int fd);  // -o
-    bool isOperator(int fd) const;  // --> is this client operator from this channel?
+    bool isOperator(
+        int fd) const;  // --> is this client operator from this channel?
 
     // Membership
     void join(int fd);  // --> for joining a channel
     void part(int fd);  // --> for leaving the channel
     void kick(int fd);  // --> for being kicked from a channel
-    bool isMember(int fd) const;  // --> is this client currently in this channel?
+    bool isMember(
+        int fd) const;  // --> is this client currently in this channel?
 
     // Modes
     bool isInviteOnly() const;
@@ -57,8 +60,9 @@ public:
     void setKey(const std::string& key);
     size_t getLimit() const;
     void setLimit(size_t limit);
-    // - void broadcast()  --> send a broadcast (message for everyone) for the
-    // people in the channel
+
+    // broadcast
+    std::vector<int> getBroadcastTargets(int exceptFd = -1) const;
 
     // additional helper functions
     bool isEmpty() const;
