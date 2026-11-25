@@ -27,6 +27,12 @@ TEST_CHANNEL_SRC     =  tests/test_channel.cpp
 TEST_CHANNEL_SRC     += src/domain/Channel.cpp
 TEST_CHANNEL_OBJ     =  $(TEST_CHANNEL_SRC:.cpp=.o)
 
+TEST_DOMAIN_NAME =  test_domain
+TEST_DOMAIN_SRC  =  tests/test_domain.cpp
+TEST_DOMAIN_SRC  += src/domain/ServerState.cpp
+TEST_DOMAIN_SRC  += src/domain/Channel.cpp
+TEST_DOMAIN_OBJ  =  $(TEST_DOMAIN_SRC:.cpp=.o)
+
 TEST_OBJ  =  $(TEST_SRC:.cpp=.o)
 
 TEST_HANDLERS_NAME =  test_handlers
@@ -36,6 +42,8 @@ TEST_HANDLERS_SRC  += src/protocol/Parser.cpp
 TEST_HANDLERS_SRC  += src/protocol/Replies.cpp
 TEST_HANDLERS_SRC  += src/engine/Client.cpp
 TEST_HANDLERS_SRC  += src/engine/Server.cpp
+TEST_HANDLERS_SRC  += src/domain/ServerState.cpp
+TEST_HANDLERS_SRC  += src/domain/Channel.cpp
 
 TEST_HANDLERS_OBJ  =  $(TEST_HANDLERS_SRC:.cpp=.o)
 
@@ -45,7 +53,7 @@ $(NAME): $(OBJ)
 	$(CXX) $(CXXFLAGS) $(OBJ) -o $(NAME)
 	@echo "$(NAME) compiled"
 
-test: test-protocol test-handlers test-channel
+test: test-protocol test-handlers test-channel test-domain
 
 test-protocol: $(TEST_OBJ)
 	$(CXX) $(CXXFLAGS) $(TEST_OBJ) -o $(TEST_NAME)
@@ -59,15 +67,19 @@ test-channel: $(TEST_CHANNEL_OBJ)
 	$(CXX) $(CXXFLAGS) $(TEST_CHANNEL_OBJ) -o $(TEST_CHANNEL_NAME)
 	./$(TEST_CHANNEL_NAME)
 
+test-domain: $(TEST_DOMAIN_OBJ)
+	$(CXX) $(CXXFLAGS) $(TEST_DOMAIN_OBJ) -o $(TEST_DOMAIN_NAME)
+	./$(TEST_DOMAIN_NAME)
+
 %.o: %.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ) $(TEST_OBJ) $(TEST_HANDLERS_OBJ) $(TEST_CHANNEL_OBJ)
+	rm -f $(OBJ) $(TEST_OBJ) $(TEST_HANDLERS_OBJ) $(TEST_CHANNEL_OBJ) $(TEST_DOMAIN_OBJ)
 
 fclean: clean
-	rm -f $(NAME) $(TEST_NAME) $(TEST_HANDLERS_NAME) $(TEST_CHANNEL_NAME)
+	rm -f $(NAME) $(TEST_NAME) $(TEST_HANDLERS_NAME) $(TEST_CHANNEL_NAME) $(TEST_DOMAIN_OBJ)
 
 re: fclean all
 
-.PHONY: all clean fclean re test test-protocol test-handlers test-channel
+.PHONY: all clean fclean re test test-protocol test-handlers test-channel test-domain
