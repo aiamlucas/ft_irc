@@ -10,11 +10,13 @@
 #include "Replies.hpp"
 #include "Server.hpp"
 
-// sends the welcome messages (001-004)
-// when the client finished the registration (password + nickname + username)
+// sends the welcome block (001-004 and 422)
+// once the client finished the registration (password + nickname + username)
+// USER, NICK and PASS can arrive in any order, so each of them
+// calls welcomeIfRegistered() and the last one triggers the welcome block
 static void welcomeIfRegistered(Client& client) {
     if (!client.isRegistered() || client.isWelcomeOk()) return;
-    client.setWelcomeOk();
+    client.setWelcomeOk();  // flag for not sending the welcome twice
     client.queue(
         numericReply(client, RPL_WELCOME, RPL_WELCOME_MSG + client.prefix()));
     client.queue(numericReply(client, RPL_YOURHOST, RPL_YOURHOST_MSG));
@@ -65,23 +67,29 @@ static void handlePing(Server&, Client& client, const Message& message) {
     client.queue(pongReply(message.params[0]));
 }
 
+// message should be: PASS <password>
+// replies: 461 (no password give), 462 (already registered),
+//         464 (wrong password), nothing if the password is right
 static void handlePass(Server& server, Client& client, const Message& message) {
     if (message.params.empty()) {
         client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
                                   "PASS " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
+    // the password cannot be sent again after the registration
     if (client.isRegistered()) {
         client.queue(numericReply(client, ERR_ALREADYREGISTRED,
                                   ERR_ALREADYREGISTRED_MSG));
         return;
     }
+    // wrong password: 464 and the client stays without password
     if (!server.isPasswordAccepted(message.params[0])) {
         client.queue(
             numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
-        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #10)
+        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #26)
         return;
     }
+    // right password: no reply
     client.setPasswordOk();
     welcomeIfRegistered(client);
 }
