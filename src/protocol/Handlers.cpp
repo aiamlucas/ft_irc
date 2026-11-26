@@ -10,6 +10,21 @@
 #include "Replies.hpp"
 #include "Server.hpp"
 
+// sends the welcome block (001-004 and 422)
+// once the client finished the registration (password + nickname + username)
+// USER, NICK and PASS can arrive in any order, so each of them
+// calls welcomeIfRegistered() and the last one triggers the welcome block
+static void welcomeIfRegistered(Client& client) {
+    if (!client.isRegistered() || client.isWelcomeOk()) return;
+    client.setWelcomeOk();  // flag for not sending the welcome twice
+    client.queue(
+        numericReply(client, RPL_WELCOME, RPL_WELCOME_MSG + client.prefix()));
+    client.queue(numericReply(client, RPL_YOURHOST, RPL_YOURHOST_MSG));
+    client.queue(numericReply(client, RPL_CREATED, RPL_CREATED_MSG));
+    client.queue(numericReply(client, RPL_MYINFO, RPL_MYINFO_MSG));
+    client.queue(numericReply(client, ERR_NOMOTD, ERR_NOMOTD_MSG));
+}
+
 // a function pointer (calling through a lookup table)
 typedef void (*Handler)(Server&, Client&, const Message&);
 
@@ -39,6 +54,7 @@ static void handleNick(Server&, Client& client, const Message& message) {
         return;
     }
     client.setNickname(message.params[0]);
+    welcomeIfRegistered(client);
 }
 
 // message should be: PING <token>
@@ -51,10 +67,39 @@ static void handlePing(Server&, Client& client, const Message& message) {
     client.queue(pongReply(message.params[0]));
 }
 
+// message should be: PASS <password>
+// replies: 461 (no password give), 462 (already registered),
+//         464 (wrong password), nothing if the password is right
 static void handlePass(Server& server, Client& client, const Message& message) {
     if (message.params.empty()) {
         client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
                                   "PASS " ERR_NEEDMOREPARAMS_MSG));
+        return;
+    }
+    // the password cannot be sent again after the registration
+    if (client.isRegistered()) {
+        client.queue(numericReply(client, ERR_ALREADYREGISTRED,
+                                  ERR_ALREADYREGISTRED_MSG));
+        return;
+    }
+    // wrong password: 464 and the client stays without password
+    if (!server.isPasswordAccepted(message.params[0])) {
+        client.queue(
+            numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
+        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #26)
+        return;
+    }
+    // right password: no reply
+    client.setPasswordOk();
+    welcomeIfRegistered(client);
+}
+
+// message should be: USER <username> <mode> <unused> :<realname>
+// EX: USER ssin 0 * :Sara Sin
+static void handleUser(Server&, Client& client, const Message& message) {
+    if (message.params.size() < 4) {
+        client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
+                                  "USER " ERR_NEEDMOREPARAMS_MSG));
         return;
     }
     if (client.isRegistered()) {
@@ -62,21 +107,14 @@ static void handlePass(Server& server, Client& client, const Message& message) {
                                   ERR_ALREADYREGISTRED_MSG));
         return;
     }
-    if (!server.isPasswordAccepted(message.params[0])) {
-        client.queue(
-            numericReply(client, ERR_PASSWDMISMATCH, ERR_PASSWDMISMATCH_MSG));
-        // TODO: close the connection after ERR_PASSWDMISMATCH (issue #10)
-        return;
-    }
-    client.setPasswordOk();
+    client.setUsername(message.params[0]);
+    welcomeIfRegistered(client);
 }
 
 // lookup table
 static const Command commands[] = {
-    {"JOIN", handleJoin},
-    {"NICK", handleNick},
-    {"PING", handlePing},
-    {"PASS", handlePass},
+    {"JOIN", handleJoin}, {"NICK", handleNick}, {"PING", handlePing},
+    {"PASS", handlePass}, {"USER", handleUser},
 };
 
 // finds the right command in the lookup table and calls its handler
