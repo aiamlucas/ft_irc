@@ -4,6 +4,7 @@
 
 #include "Client.hpp"
 #include "Handlers.hpp"
+#include "IrcMacros.hpp"
 #include "Server.hpp"
 #include "colors.hpp"
 
@@ -65,6 +66,25 @@ static void expectUsername(const Client& client, const std::string& expected) {
 int main() {
     std::string line;
     std::string expected;
+
+    // The welcome block: the server sends these five lines when
+    // the registration is complete:
+    //    :<server> <code> <nick> <text>
+    // 001 tells the client that it's registered (WeeChat reads the nickname
+    // from it). 002-004 describe the server, 422 says there's no MOTD.
+    // Ex: nick "ssin" username "ssin" host "127.0.0.1"
+    // if the date in the 003 line differs, do make re (date is set to the
+    // compiled date)
+    const std::string WELCOME =
+        ":" SERVER_NAME " " RPL_WELCOME " ssin " RPL_WELCOME_MSG
+        "ssin!ssin@127.0.0.1\r\n"
+        ":" SERVER_NAME " " RPL_YOURHOST " ssin " RPL_YOURHOST_MSG
+        "\r\n"
+        ":" SERVER_NAME " " RPL_CREATED " ssin " RPL_CREATED_MSG
+        "\r\n"
+        ":" SERVER_NAME " " RPL_MYINFO " ssin " RPL_MYINFO_MSG
+        "\r\n"
+        ":" SERVER_NAME " " ERR_NOMOTD " ssin " ERR_NOMOTD_MSG "\r\n";
 
     {
         printTest("Test 1: PING: should answer with PONG and the same token");
@@ -182,6 +202,76 @@ int main() {
         expected = "";
         expectHandleLine(client, line, expected);
         expectUsername(client, "ssin");
+    }
+    {
+        printTest("Test 15: NICK completes the registration (welcome block)");
+        // Situation:  client already sent PASS and USER,
+        //             only nickname is missing
+        // Action: NICK completes the registration
+        // Expected: the whole welcome block (001, 002, 003, 004, 422).
+        // The host is set because the 001 line shows nick!user@host.
+        Client client(4);
+        client.setHostname("127.0.0.1");
+        client.setPasswordOk();
+        client.setUsername("ssin");
+        line = "NICK ssin";
+        expected = WELCOME;
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 16: USER completes the registration (welcome block)");
+        // Situation: password and nickname are set, the username is missing.
+        // Action: USER completes the registration.
+        // Expected: the whole welcome block
+        Client client(4);
+        client.setHostname("127.0.0.1");
+        client.setPasswordOk();
+        client.setNickname("ssin");
+        line = "USER ssin 0 * :Sara Sin";
+        expected = WELCOME;
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 17: PASS completes the registration (welcome block)");
+        // Situation: nickname and username are set, the password is missing
+        //            (some clients send PASS last).
+        // Action: the right password completes the registration.
+        // Expected: the whole welcome block.
+        Client client(4);
+        client.setHostname("127.0.0.1");
+        client.setNickname("ssin");
+        client.setUsername("ssin");
+        line = "PASS poulettepass";
+        expected = WELCOME;
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 18: NICK without the password (no welcome)");
+        // Situation: only the username is set, the password is missing.
+        // Action:  NICK, but the client is still not registered.
+        // Expected: no output. The welcome must wait for the password.
+        // No host: the server sends nothing, so the host is not used
+        Client client(4);
+        client.setUsername("ssin");
+        line = "NICK ssin";
+        expected = "";
+        expectHandleLine(client, line, expected);
+    }
+    {
+        printTest("Test 19: NICK after the welcome (no second welcome)");
+        // Situation: the client is registered and was already welcomed.
+        //            setWelcomeOk is a shortcut for "the block was sent".
+        // Action: the client changes its nickname.
+        // Expected: no output. The welcome is sent only once
+        // No host: the server sends nothing, so the host is not used
+        Client client(4);
+        client.setPasswordOk();
+        client.setNickname("ssin");
+        client.setUsername("ssin");
+        client.setWelcomeOk();
+        line = "NICK sara";
+        expected = "";
+        expectHandleLine(client, line, expected);
     }
 
     std::cout << "\n"
