@@ -10,6 +10,19 @@
 #include "Replies.hpp"
 #include "Server.hpp"
 
+// sends the welcome messages (001-004)
+// when the client finished the registration (password + nickname + username)
+static void welcomeIfRegistered(Client& client) {
+    if (!client.isRegistered() || client.isWelcomeOk()) return;
+    client.setWelcomeOk();
+    client.queue(
+        numericReply(client, RPL_WELCOME, RPL_WELCOME_MSG + client.prefix()));
+    client.queue(numericReply(client, RPL_YOURHOST, RPL_YOURHOST_MSG));
+    client.queue(numericReply(client, RPL_CREATED, RPL_CREATED_MSG));
+    client.queue(numericReply(client, RPL_MYINFO, RPL_MYINFO_MSG));
+    client.queue(numericReply(client, ERR_NOMOTD, ERR_NOMOTD_MSG));
+}
+
 // a function pointer (calling through a lookup table)
 typedef void (*Handler)(Server&, Client&, const Message&);
 
@@ -39,6 +52,7 @@ static void handleNick(Server&, Client& client, const Message& message) {
         return;
     }
     client.setNickname(message.params[0]);
+    welcomeIfRegistered(client);
 }
 
 // message should be: PING <token>
@@ -69,6 +83,7 @@ static void handlePass(Server& server, Client& client, const Message& message) {
         return;
     }
     client.setPasswordOk();
+    welcomeIfRegistered(client);
 }
 
 // message should be: USER <username> <mode> <unused> :<realname>
@@ -85,6 +100,7 @@ static void handleUser(Server&, Client& client, const Message& message) {
         return;
     }
     client.setUsername(message.params[0]);
+    welcomeIfRegistered(client);
 }
 
 // lookup table
