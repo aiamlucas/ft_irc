@@ -35,9 +35,9 @@ static void handleJoin(Server& server, Client& client, const Message& message) {
     
     Channel* channel = server.getState().getChannel(channelName);
     
-    std::string joinMsg = ":" + client.getNickname() + " JOIN " + channelName + "\r\n";
+    std::string joinMsg = ":" + client.prefix() + " JOIN " + channelName;
     
-    std::vector<int> targets = channel->getBroadcastTargets(-1);
+    std::vector<int> targets = channel->getBroadcastTargets(NO_EXCEPTION);
     for (size_t i = 0; i < targets.size(); i++) {
         server.queueMessage(targets[i], joinMsg);
     }
