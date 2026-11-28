@@ -21,7 +21,7 @@ struct Command {
 };
 
 // message should be: JOIN <#channel>
-static void handleJoin(Server&, Client& client, const Message& message) {
+static void handleJoin(Server& server, Client& client, const Message& message) {
     if (message.params.empty()) {
         client.queue(numericReply(client, ERR_NEEDMOREPARAMS,
                                   "JOIN " ERR_NEEDMOREPARAMS_MSG));
@@ -29,6 +29,18 @@ static void handleJoin(Server&, Client& client, const Message& message) {
     }
     // TODO: find or create the channel, add the client, tell the other members
     // that this client entered the channel
+    std::string channelName = message.params[0];
+    
+    server.getState().handleJoin(client.getFd(), channelName);
+    
+    Channel* channel = server.getState().getChannel(channelName);
+    
+    std::string joinMsg = ":" + client.prefix() + " JOIN " + channelName;
+    
+    std::vector<int> targets = channel->getBroadcastTargets(BROADCAST_EXCLUDE_NOBODY);
+    for (size_t i = 0; i < targets.size(); i++) {
+        server.queueMessage(targets[i], joinMsg);
+    }
 }
 
 // message should be: NICK <nickname>

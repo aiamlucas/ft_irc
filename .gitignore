@@ -11,6 +11,7 @@ ircserv
 test_protocol
 test_handlers
 test_channel
+test_domain
 
 # --- clangd / language server ---
 compile_commands.json
@@ -68,3 +69,6 @@ ehthumbs.db
 Desktop.ini
 $RECYCLE.BIN/
 *.lnk
+
+# --- Docker ---
+dockerfile

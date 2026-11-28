@@ -49,4 +49,7 @@
 #define ERR_ALREADYREGISTRED_MSG ":You may not reregister"
 #define ERR_PASSWDMISMATCH_MSG ":Password incorrect"
 
+// extra macro to make code more understandable and readable    
+#define BROADCAST_EXCLUDE_NOBODY -1
+
 #endif
